@@ -212,6 +212,9 @@ protected:
   //!< Service that resets the optimizer to its initial state
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_service_server_;
 
+  // Timer callback group
+  rclcpp::CallbackGroup::SharedPtr timer_cb_group_;
+
   /**
    * @brief Automatically start the smoother if no ignition sensors are specified
    */
