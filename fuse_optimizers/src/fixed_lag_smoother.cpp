@@ -90,9 +90,6 @@ FixedLagSmoother::FixedLagSmoother(
 {
   params_.loadFromROS(interfaces_);
 
-  timer_cb_group_ = 
-    interfaces_.get_node_base_interface()->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
   // Test for auto-start
   autostart();
 
@@ -105,7 +102,7 @@ FixedLagSmoother::FixedLagSmoother(
     clock_,
     params_.optimization_period,
     std::bind(&FixedLagSmoother::optimizerTimerCallback, this),
-    timer_cb_group_
+    interfaces_.get_node_base_interface()->get_default_callback_group()
   );
 
   // Advertise a service that resets the optimizer to its initial state
@@ -261,7 +258,7 @@ void FixedLagSmoother::optimizationLoop()
       // Optimize the entire graph
       // std::cout << "[TIMER_CB] Starting optimizations.." << std::endl;
       summary_ = graph_->optimize(params_.solver_options);
-      std::cout << summary_.FullReport() << std::endl;
+      // std::cout << summary_.FullReport() << std::endl;
       // std::cout << "[TIMER_CB] Finished optimizing" << std::endl;
 
       // Optimization is complete. Notify all the things about the graph changes.
@@ -332,8 +329,8 @@ void FixedLagSmoother::processQueue(
   fuse_core::Transaction & transaction,
   const rclcpp::Time & lag_expiration)
 {
-  std::cout << "[TIMER_CB] Processing queue" << std::endl;
-  std::cout << "[TIMER_CB] acquiring pending_transaction_lock" << std::endl;
+  // std::cout << "[TIMER_CB] Processing queue" << std::endl;
+  // std::cout << "[TIMER_CB] acquiring pending_transaction_lock" << std::endl;
   // We need to get the pending transactions from the queue
   std::lock_guard<std::mutex> pending_transactions_lock(pending_transactions_mutex_);
 
@@ -341,7 +338,7 @@ void FixedLagSmoother::processQueue(
     return;
   }
 
-  std::cout << "[TIMER_CB] Pending transactions size: " << pending_transactions_.size() << std::endl;
+  // std::cout << "[TIMER_CB] Pending transactions size: " << pending_transactions_.size() << std::endl;
 
   // If we just started because an ignition sensor transaction was received, we try to process it
   // individually. This is important because we need to update the graph with the ignition sensor
@@ -354,7 +351,7 @@ void FixedLagSmoother::processQueue(
   // lead to local minima because the variables in the graph are not initialized properly, i.e. they
   // do not take the ignition sensor transaction into account.
   if (ignited_) {
-    // std::cout << "[TIMER_CB] processing ignition sensor transaction individually" << std::endl;
+    // std::cout << "[TIMER_CB](default) processing ignition sensor transaction individually" << std::endl;
     // The ignition sensor transaction is assumed to be at the end of the queue, because it must be
     // the oldest one. If there is more than one ignition sensor transaction in the queue, it is
     // always the oldest one that started things up.
@@ -415,10 +412,10 @@ void FixedLagSmoother::processQueue(
       // should be processed in the next one.
       return;
     }
-  // std::cout << "[TIMER_CB] releasing pending_transaction_lock" << std::endl;
+  // std::cout << "[TIMER_CB](default) releasing pending_transaction_lock" << std::endl;
   }
 
-  // std::cout << "[TIMER_CB] processing other transactions" << std::endl;
+  // std::cout << "[TIMER_CB](default) processing other transactions" << std::endl;
   // Use the most recent transaction time as the current time
   const auto current_time = pending_transactions_.front().stamp();
 
@@ -472,7 +469,7 @@ void FixedLagSmoother::processQueue(
       }
     }
   }
-  // std::cout << "[TIMER_CB] releasing pending_transaction_lock" << std::endl;
+  // std::cout << "[TIMER_CB](default) releasing pending_transaction_lock" << std::endl;
 }
 
 bool FixedLagSmoother::resetServiceCallback(

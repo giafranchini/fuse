@@ -83,8 +83,11 @@ Optimizer::Optimizer(
 
   // add a ros1 style callback queue so that transactions can be processed in the optimiser's
   // executor
+  transaction_cb_group_ = interfaces_.get_node_base_interface()->create_callback_group(
+    rclcpp::CallbackGroupType::Reentrant);
+
   interfaces_.get_node_waitables_interface()->add_waitable(
-    callback_queue_, (rclcpp::CallbackGroup::SharedPtr) nullptr);
+    callback_queue_, transaction_cb_group_);
 
   diagnostic_updater_.add(
     interfaces_.get_node_base_interface()->get_namespace(), this, &Optimizer::setDiagnostics);
