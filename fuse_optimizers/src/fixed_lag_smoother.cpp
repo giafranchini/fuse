@@ -201,9 +201,7 @@ void FixedLagSmoother::optimizationLoop()
     auto optimization_deadline = rclcpp::Time(0, 0, RCL_ROS_TIME);
     {
       std::unique_lock<std::mutex> lock(optimization_requested_mutex_);
-      // std::cout << "[TIMER_CB] Waiting to start optimization" << std::endl;
       optimization_requested_.wait(lock, exit_wait_condition);
-      // std::cout << "[TIMER_CB] Finish to wait! Continuing with optimization" << std::endl;
       optimization_request_ = false;
       optimization_deadline = optimization_deadline_;
     }
@@ -216,7 +214,6 @@ void FixedLagSmoother::optimizationLoop()
     // Optimize
     {
       std::lock_guard<std::mutex> lock(optimization_mutex_);
-      // std::cout << "[TIMER_CB] Acquired optimization mutex" << std::endl;
       // Apply motion models
       auto new_transaction = fuse_core::Transaction::make_shared();
       // DANGER: processQueue obtains a lock from the pending_transactions_mutex_
@@ -237,9 +234,7 @@ void FixedLagSmoother::optimizationLoop()
       new_transaction->merge(marginal_transaction_);
       // Update the graph
       try {
-        // std::cout << "[TIMER_CB] Updating graph" << std::endl;
         graph_->update(*new_transaction);
-        // std::cout << "[TIMER_CB] Finished updating graph" << std::endl;
       } catch (const std::exception & ex) {
         std::ostringstream oss;
         oss << "Graph:\n";
@@ -256,10 +251,7 @@ void FixedLagSmoother::optimizationLoop()
         break;
       }
       // Optimize the entire graph
-      // std::cout << "[TIMER_CB] Starting optimizations.." << std::endl;
       summary_ = graph_->optimize(params_.solver_options);
-      // std::cout << summary_.FullReport() << std::endl;
-      // std::cout << "[TIMER_CB] Finished optimizing" << std::endl;
 
       // Optimization is complete. Notify all the things about the graph changes.
       const auto new_transaction_stamp = new_transaction->stamp();
@@ -329,8 +321,6 @@ void FixedLagSmoother::processQueue(
   fuse_core::Transaction & transaction,
   const rclcpp::Time & lag_expiration)
 {
-  // std::cout << "[TIMER_CB] Processing queue" << std::endl;
-  // std::cout << "[TIMER_CB] acquiring pending_transaction_lock" << std::endl;
   // We need to get the pending transactions from the queue
   std::lock_guard<std::mutex> pending_transactions_lock(pending_transactions_mutex_);
 
@@ -338,7 +328,6 @@ void FixedLagSmoother::processQueue(
     return;
   }
 
-  // std::cout << "[TIMER_CB] Pending transactions size: " << pending_transactions_.size() << std::endl;
 
   // If we just started because an ignition sensor transaction was received, we try to process it
   // individually. This is important because we need to update the graph with the ignition sensor
@@ -351,7 +340,6 @@ void FixedLagSmoother::processQueue(
   // lead to local minima because the variables in the graph are not initialized properly, i.e. they
   // do not take the ignition sensor transaction into account.
   if (ignited_) {
-    // std::cout << "[TIMER_CB](default) processing ignition sensor transaction individually" << std::endl;
     // The ignition sensor transaction is assumed to be at the end of the queue, because it must be
     // the oldest one. If there is more than one ignition sensor transaction in the queue, it is
     // always the oldest one that started things up.
@@ -412,10 +400,8 @@ void FixedLagSmoother::processQueue(
       // should be processed in the next one.
       return;
     }
-  // std::cout << "[TIMER_CB](default) releasing pending_transaction_lock" << std::endl;
   }
 
-  // std::cout << "[TIMER_CB](default) processing other transactions" << std::endl;
   // Use the most recent transaction time as the current time
   const auto current_time = pending_transactions_.front().stamp();
 
@@ -469,7 +455,6 @@ void FixedLagSmoother::processQueue(
       }
     }
   }
-  // std::cout << "[TIMER_CB](default) releasing pending_transaction_lock" << std::endl;
 }
 
 bool FixedLagSmoother::resetServiceCallback(
@@ -515,7 +500,6 @@ void FixedLagSmoother::transactionCallback(
   const std::string & sensor_name,
   fuse_core::Transaction::SharedPtr transaction)
 {
-  // std::cout << "[DEFAULT_CB] Inside transaction callback" << std::endl;
   // If this transaction occurs before the start time, just ignore it
   auto start_time = getStartTime();
   const auto max_time = transaction->maxStamp();
@@ -530,7 +514,6 @@ void FixedLagSmoother::transactionCallback(
   }
   {
     // We need to add the new transaction to the pending_transactions_ queue
-    // std::cout << "[DEFAULT_CB] acquiring pending_transactions_lock" << std::endl;
     std::lock_guard<std::mutex> pending_transactions_lock(pending_transactions_mutex_);
 
     // Add the new transaction to the pending set
@@ -595,7 +578,6 @@ void FixedLagSmoother::transactionCallback(
       }
     }
   }
-  // std::cout << "[DEFAULT_CB] releasing pending_transactions_lock" << std::endl;
 }
 
 /**
