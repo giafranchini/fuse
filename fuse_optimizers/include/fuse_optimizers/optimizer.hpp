@@ -174,6 +174,8 @@ protected:
 
   std::shared_ptr<fuse_core::CallbackAdapter> callback_queue_;
 
+  rclcpp::CallbackGroup::SharedPtr transaction_cb_group_;  //!< Internal re-entrant callback group for
+                                                           //!< transaction callbacks
 
   /**
    * @brief Callback fired every time a SensorModel plugin creates a new transaction
