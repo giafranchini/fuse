@@ -328,7 +328,6 @@ void FixedLagSmoother::processQueue(
     return;
   }
 
-
   // If we just started because an ignition sensor transaction was received, we try to process it
   // individually. This is important because we need to update the graph with the ignition sensor
   // transaction in order to get the motion models notified of the initial state. The motion models
