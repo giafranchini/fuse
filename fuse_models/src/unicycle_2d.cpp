@@ -421,6 +421,8 @@ void Unicycle2D::generateMotionModel(
     }
   }
 
+  fuse_core::Matrix8d sqrt_information = process_noise_covariance.cwiseSqrt();
+  sqrt_information.diagonal() = sqrt_information.diagonal().cwiseInverse();
   // Create the constraints for this motion model segment
   auto constraint = fuse_models::Unicycle2DStateKinematicConstraint::make_shared(
     name(),
@@ -434,7 +436,7 @@ void Unicycle2D::generateMotionModel(
     *velocity_linear2,
     *velocity_yaw2,
     *acceleration_linear2,
-    process_noise_covariance);
+    sqrt_information);
 
   // Update the output variables
   constraints.push_back(constraint);

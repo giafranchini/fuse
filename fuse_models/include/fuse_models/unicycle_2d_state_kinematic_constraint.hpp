@@ -90,7 +90,7 @@ public:
    * @param[in] linear_velocity2 Linear velocity component variable of the second state
    * @param[in] yaw_velocity2 Yaw velocity component variable of the second state
    * @param[in] linear_acceleration2 Linear acceleration component variable of the second state
-   * @param[in] covariance - The covariance matrix used to weight the constraint. Order is (x, y,
+   * @param[in] sqrt_information - The sqrt_information matrix used to weight the constraint. Order is (x, y,
    *                         yaw, x_vel, y_vel, yaw_vel, x_acc, y_acc)
    */
   Unicycle2DStateKinematicConstraint(
@@ -105,7 +105,7 @@ public:
     const fuse_variables::VelocityLinear2DStamped & linear_velocity2,
     const fuse_variables::VelocityAngular2DStamped & yaw_velocity2,
     const fuse_variables::AccelerationLinear2DStamped & linear_acceleration2,
-    const fuse_core::Matrix8d & covariance);
+    const fuse_core::Matrix8d & sqrt_information);
 
   /**
    * @brief Destructor

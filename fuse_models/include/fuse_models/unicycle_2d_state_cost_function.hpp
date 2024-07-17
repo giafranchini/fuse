@@ -167,7 +167,7 @@ public:
     // Scale the residuals by the square root information matrix to account for
     // the measurement uncertainty.
     Eigen::Map<fuse_core::Vector8d> residuals_map(residuals);
-    residuals_map.applyOnTheLeft(A_);
+    residuals_map.array().colwise() *= A_.diagonal().array();
 
     if (jacobians) {
       // It might be possible to simplify the code below implementing something like this but using
@@ -187,31 +187,31 @@ public:
       // Update jacobian wrt position1
       if (jacobians[0]) {
         Eigen::Map<fuse_core::Matrix<double, 8, 2>> jacobian(jacobians[0]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt yaw1
       if (jacobians[1]) {
         Eigen::Map<fuse_core::Vector8d> jacobian(jacobians[1]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt vel_linear1
       if (jacobians[2]) {
         Eigen::Map<fuse_core::Matrix<double, 8, 2>> jacobian(jacobians[2]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt vel_yaw1
       if (jacobians[3]) {
         Eigen::Map<fuse_core::Vector8d> jacobian(jacobians[3]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt acc_linear1
       if (jacobians[4]) {
         Eigen::Map<fuse_core::Matrix<double, 8, 2>> jacobian(jacobians[4]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // It might be possible to simplify the code below implementing something like this but using

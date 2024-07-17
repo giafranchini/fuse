@@ -61,7 +61,7 @@ Unicycle2DStateKinematicConstraint::Unicycle2DStateKinematicConstraint(
   const fuse_variables::VelocityLinear2DStamped & linear_velocity2,
   const fuse_variables::VelocityAngular2DStamped & yaw_velocity2,
   const fuse_variables::AccelerationLinear2DStamped & linear_acceleration2,
-  const fuse_core::Matrix8d & covariance)
+  const fuse_core::Matrix8d & sqrt_information)
 : fuse_core::Constraint(
     source,
     {position1.uuid(),
@@ -75,7 +75,7 @@ Unicycle2DStateKinematicConstraint::Unicycle2DStateKinematicConstraint(
       yaw_velocity2.uuid(),
       linear_acceleration2.uuid()}),   // NOLINT
   dt_((position2.stamp() - position1.stamp()).seconds()),
-  sqrt_information_(covariance.inverse().llt().matrixU())
+  sqrt_information_(sqrt_information)
 {
 }
 
