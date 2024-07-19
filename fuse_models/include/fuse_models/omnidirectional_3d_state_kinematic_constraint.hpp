@@ -90,7 +90,7 @@ public:
    * @param[in] velocity_linear2      Linear velocity component variable of the second state
    * @param[in] velocity_angular2     Angular velocity component variable of the second state
    * @param[in] acceleration_linear2  Linear acceleration component variable of the second state
-   * @param[in] covariance            The covariance matrix used to weight the constraint. Order is (x, y, z,
+   * @param[in] sqrt_information      The sqrt_information matrix used to weight the constraint. Order is (x, y, z,
    *                                  roll, pitch, yaw, x_vel, y_vel, z_vel, roll_vel, pitch_vel, yaw_vel, 
    *                                  x_acc, y_acc, z_acc)
    */
@@ -106,7 +106,7 @@ public:
     const fuse_variables::VelocityLinear3DStamped & velocity_linear2,
     const fuse_variables::VelocityAngular3DStamped & velocity_angular2,
     const fuse_variables::AccelerationLinear3DStamped & acceleration_linear2,
-    const fuse_core::Matrix15d & covariance);
+    const fuse_core::Matrix15d & sqrt_information);
 
   /**
    * @brief Destructor

@@ -60,7 +60,7 @@ Omnidirectional3DStateKinematicConstraint::Omnidirectional3DStateKinematicConstr
   const fuse_variables::VelocityLinear3DStamped & velocity_linear2,
   const fuse_variables::VelocityAngular3DStamped & velocity_angular2,
   const fuse_variables::AccelerationLinear3DStamped & acceleration_linear2,
-  const fuse_core::Matrix15d & covariance)
+  const fuse_core::Matrix15d & sqrt_information)
 : fuse_core::Constraint(
     source,
     {position1.uuid(),
@@ -74,7 +74,7 @@ Omnidirectional3DStateKinematicConstraint::Omnidirectional3DStateKinematicConstr
       velocity_angular2.uuid(),
       acceleration_linear2.uuid()}),   // NOLINT
   dt_((position2.stamp() - position1.stamp()).seconds()),
-  sqrt_information_(covariance.inverse().llt().matrixU())
+  sqrt_information_(sqrt_information)
 {
 }
 

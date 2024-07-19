@@ -457,6 +457,8 @@ void Omnidirectional3D::generateMotionModel(
     }
   }
 
+  fuse_core::Matrix15d sqrt_information = process_noise_covariance.cwiseSqrt();
+  sqrt_information.diagonal() = sqrt_information.diagonal().cwiseInverse();
   // Create the constraints for this motion model segment
   auto constraint = fuse_models::Omnidirectional3DStateKinematicConstraint::make_shared(
     name(),
@@ -470,7 +472,7 @@ void Omnidirectional3D::generateMotionModel(
     *velocity_linear2,
     *velocity_angular2,
     *acceleration_linear2,
-    process_noise_covariance);
+    sqrt_information);
 
   // Update the output variables
   constraints.push_back(constraint);
