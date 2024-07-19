@@ -41,7 +41,6 @@
 #include <string>
 #include <fuse_core/robin_hood.hpp>
 //#include <unordered_set>
-#include <fuse_core/robin_hood.hpp>
 #include <utility>
 #include <vector>
 
@@ -203,7 +202,7 @@ fuse_core::Transaction marginalizeVariables(
   auto variable_order = elimination_order;
 
   // Linearize all involved constraints, and store them with the variable where they will be used
-  auto used_constraints = std::unordered_set<fuse_core::UUID, fuse_core::uuid::hash>();
+  auto used_constraints = robin_hood::unordered_set<fuse_core::UUID, fuse_core::uuid::hash>();
   std::vector<std::vector<detail::LinearTerm>> linear_terms(variable_order.size());
   for (size_t i = 0ul; i < marginalized_variables.size(); ++i) {
     const auto constraints = graph.getConnectedConstraints(variable_order[i]);
