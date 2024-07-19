@@ -33,7 +33,7 @@
  */
 #include <algorithm>
 #include <string>
-#include <unordered_map>
+#include <fuse_core/robin_hood.hpp>
 #include <vector>
 
 #include "common.hpp"

@@ -49,7 +49,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <fuse_core/robin_hood.hpp>
 
 namespace fuse_viz
 {
@@ -91,14 +91,14 @@ private Q_SLOTS:
   void updateShowConstraints();
 
 private:
-  using ChangedByUUIDMap = std::unordered_map<fuse_core::UUID, bool, fuse_core::uuid::hash>;
+  using ChangedByUUIDMap = robin_hood::unordered_map<fuse_core::UUID, bool, fuse_core::uuid::hash>;
   using ConstraintByUUIDMap =
-    std::unordered_map<fuse_core::UUID, std::shared_ptr<RelativePose2DStampedConstraintVisual>,
+    robin_hood::unordered_map<fuse_core::UUID, std::shared_ptr<RelativePose2DStampedConstraintVisual>,
       fuse_core::uuid::hash>;
-  using ColorBySourceMap = std::unordered_map<std::string, Ogre::ColourValue>;
+  using ColorBySourceMap = robin_hood::unordered_map<std::string, Ogre::ColourValue>;
   using ConstraintPropertyBySourceMap = std::map<std::string,
       RelativePose2DStampedConstraintProperty *>;
-  using ConfigBySourceMap = std::unordered_map<std::string, rviz_common::Config>;
+  using ConfigBySourceMap = robin_hood::unordered_map<std::string, rviz_common::Config>;
 
   void clear();
 

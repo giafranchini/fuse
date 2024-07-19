@@ -124,7 +124,7 @@ void Optimizer::loadMotionModels()
   // the configurations used to load models
   std::vector<ModelConfig> motion_model_config;
 
-  std::unordered_set<std::string> motion_model_names =
+  robin_hood::unordered_set<std::string> motion_model_names =
     fuse_core::list_parameter_override_prefixes(
     interfaces_, "motion_models.");
 
@@ -196,7 +196,7 @@ void Optimizer::loadSensorModels()
   // the configurations used to load models
   std::vector<ModelConfig> sensor_model_config;
 
-  std::unordered_set<std::string> sensor_model_names =
+  robin_hood::unordered_set<std::string> sensor_model_names =
     fuse_core::list_parameter_override_prefixes(
     interfaces_, "sensor_models.");
 
@@ -324,7 +324,7 @@ void Optimizer::loadPublishers()
   // the configurations used to load models
   std::vector<PublisherConfig> publisher_config;
 
-  std::unordered_set<std::string> publisher_names =
+  robin_hood::unordered_set<std::string> publisher_names =
     fuse_core::list_parameter_override_prefixes(
     interfaces_, "publishers.");
 

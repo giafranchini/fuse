@@ -38,7 +38,8 @@
 #include <initializer_list>
 #include <iterator>
 #include <iostream>
-#include <unordered_set>
+//#include <unordered_set>
+#include <fuse_core/robin_hood.hpp>
 #include <vector>
 
 
@@ -117,7 +118,7 @@ public:
   void print(std::ostream & stream = std::cout) const;
 
 private:
-  using ConstraintCollection = std::unordered_set<unsigned int>;
+  using ConstraintCollection = robin_hood::unordered_set<unsigned int>;
   using ConstraintsByVariable = std::vector<ConstraintCollection>;
 
   ConstraintsByVariable variable_constraints_;  //!< The collection of constraints for each variable
