@@ -205,37 +205,37 @@ public:
     // Scale the residuals by the square root information matrix to account for
     // the measurement uncertainty.
     Eigen::Map<fuse_core::Vector15d> residuals_map(residuals);
-    residuals_map.applyOnTheLeft(A_);
+    residuals_map.array().colwise() *= A_.diagonal().array();    
 
     if (jacobians) {
       // Update jacobian wrt position1
       if (jacobians[0]) {
         Eigen::Map<fuse_core::Matrix<double, 15, 3>> jacobian(jacobians[0]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt orientation1
       if (jacobians[1]) {
         Eigen::Map<fuse_core::Matrix<double, 15, 4>> jacobian(jacobians[1]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt vel_linear1
       if (jacobians[2]) {
         Eigen::Map<fuse_core::Matrix<double, 15, 3>> jacobian(jacobians[2]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt vel_yaw1
       if (jacobians[3]) {
         Eigen::Map<fuse_core::Matrix<double, 15, 3>> jacobian(jacobians[3]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
 
       // Update jacobian wrt acc_linear1
       if (jacobians[4]) {
         Eigen::Map<fuse_core::Matrix<double, 15, 3>> jacobian(jacobians[4]);
-        jacobian.applyOnTheLeft(-A_);
+        jacobian.array().colwise() *= -A_.diagonal().array();
       }
       
       // Jacobian wrt position2
@@ -248,6 +248,7 @@ public:
       if (jacobians[6]) {
         Eigen::Map<fuse_core::Matrix<double, 15, 4>> jacobian(jacobians[6]);
         Eigen::Map<fuse_core::Matrix<double, 3, 4>> j2_quat2rpy_map(j2_quat2rpy);
+        // TODO(giafranchini): this also can be optimized, check if it is worth it
         jacobian = A_.block<15, 3>(0, 3) * j2_quat2rpy_map;
       }
 
