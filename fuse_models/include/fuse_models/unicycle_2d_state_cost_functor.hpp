@@ -182,7 +182,7 @@ bool Unicycle2DStateCostFunctor::operator()(
 
   // Scale the residuals by the square root information matrix to account for
   // the measurement uncertainty.
-  residuals_map.applyOnTheLeft(A_.template cast<T>());
+  residuals_map.array().colwise() *= A_.template cast<T>().diagonal().array();
 
   return true;
 }
