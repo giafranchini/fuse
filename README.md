@@ -5,6 +5,9 @@
 The fuse stack provides a general architecture for performing sensor fusion live on a robot. Some possible applications
 include state estimation, localization, mapping, and calibration.
 
+To build with `robin_hood::unordered_map` and `robin_hood::unordered_set`, build with:
+```colcon build --cmake-args " -DUSE_ROBIN_HOOD=1"```
+
 ## Overview
 
 fuse is a ROS framework for performing sensor fusion using nonlinear least squares optimization techniques. In

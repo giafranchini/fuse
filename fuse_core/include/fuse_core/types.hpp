@@ -4,9 +4,8 @@
 #include <functional>
 #include <memory>
 
-#ifdef _USE_ROBIN_HOOD
+#ifdef USE_ROBIN_HOOD
 #include <fuse_core/robin_hood.hpp>
-
 template<
   class Key, 
   class T, 
@@ -25,7 +24,6 @@ template<
 #else
 #include <unordered_map>
 #include <unordered_set>
-
 template<
   class Key, 
   class T, 
