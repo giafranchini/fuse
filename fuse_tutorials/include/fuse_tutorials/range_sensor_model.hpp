@@ -36,7 +36,7 @@
 
 #include <memory>
 #include <string>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 #include <fuse_core/async_sensor_model.hpp>
 #include <fuse_core/uuid.hpp>
@@ -201,7 +201,7 @@ protected:
 
   rclcpp::Logger logger_;  //!< The sensor model's logger
 
-  robin_hood::unordered_map<unsigned int, Beacon> beacon_db_;  //!< The estimated position of each beacon
+  UnorderedMap<unsigned int, Beacon> beacon_db_;  //!< The estimated position of each beacon
 
   //!< ROS subscription for the database of prior beacon positions
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr beacon_sub_;

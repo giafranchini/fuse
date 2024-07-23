@@ -35,8 +35,7 @@
 
 #include <string>
 #include <thread>
-//#include <unordered_set>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 #include <vector>
 
 #include <fuse_core/uuid.hpp>
@@ -185,7 +184,7 @@ TEST(UUID, CollisionSingleThread)
   generateUUIDs(raw_uuids);
 
   // Check for duplicates
-  robin_hood::unordered_set<fuse_core::UUID> unique_uuids;
+  UnorderedSet<fuse_core::UUID> unique_uuids;
   for (const auto & uuid : raw_uuids) {
     ASSERT_TRUE(
       unique_uuids.find(uuid) ==
@@ -208,7 +207,7 @@ TEST(UUID, CollisionManyThreads)
   }
 
   // Check for duplicates
-  robin_hood::unordered_set<fuse_core::UUID> unique_uuids;
+  UnorderedSet<fuse_core::UUID> unique_uuids;
   for (size_t i = 0; i < raw_uuids.size(); ++i) {
     for (const auto & uuid : raw_uuids[i]) {
       ASSERT_TRUE(

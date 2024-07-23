@@ -39,7 +39,7 @@
 
 #include <memory>
 #include <string>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 #include <fuse_core/uuid.hpp>
 #include <rviz_common/properties/bool_property.hpp>
@@ -136,7 +136,7 @@ private:
   void updateTextScale(const VisualPtr & constraint);
   void updateVisibility(const VisualPtr & constraint);
 
-  robin_hood::unordered_map<fuse_core::UUID, VisualPtr, fuse_core::uuid::hash> constraints_;
+  UnorderedMap<fuse_core::UUID, VisualPtr, fuse_core::uuid::hash> constraints_;
 
   ColorProperty * color_property_;
   BoolProperty * show_text_property_;

@@ -37,7 +37,7 @@
 
 #include <memory>
 #include <string>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 #include <utility>
 #include <vector>
 
@@ -118,9 +118,9 @@ protected:
   // The unique ptrs returned by pluginlib have a custom deleter. This makes specifying the type
   // rather annoying as it is not equivalent to Class::UniquePtr
   using MotionModelUniquePtr = class_loader::ClassLoader::UniquePtr<fuse_core::MotionModel>;
-  using MotionModels = robin_hood::unordered_map<std::string, MotionModelUniquePtr>;
+  using MotionModels = UnorderedMap<std::string, MotionModelUniquePtr>;
   using PublisherUniquePtr = class_loader::ClassLoader::UniquePtr<fuse_core::Publisher>;
-  using Publishers = robin_hood::unordered_map<std::string, PublisherUniquePtr>;
+  using Publishers = UnorderedMap<std::string, PublisherUniquePtr>;
   using SensorModelUniquePtr = class_loader::ClassLoader::UniquePtr<fuse_core::SensorModel>;
 
   /**
@@ -143,13 +143,13 @@ protected:
     bool ignition;               //!< Whether this sensor model is an ignition one or not
   };
 
-  using SensorModels = robin_hood::unordered_map<std::string, SensorModelInfo>;
+  using SensorModels = UnorderedMap<std::string, SensorModelInfo>;
 
   // Some internal book-keeping data structures
   using MotionModelGroup = std::vector<std::string>;  //!< A set of motion model names
 
   //!< sensor -> motion models group
-  using AssociatedMotionModels = robin_hood::unordered_map<std::string, MotionModelGroup>;
+  using AssociatedMotionModels = UnorderedMap<std::string, MotionModelGroup>;
 
   fuse_core::node_interfaces::NodeInterfaces<ALL_FUSE_CORE_NODE_INTERFACES> interfaces_;
   rclcpp::Clock::SharedPtr clock_;

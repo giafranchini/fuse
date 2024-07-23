@@ -36,7 +36,7 @@
 #define FUSE_VIZ__POSE_2D_STAMPED_PROPERTY_HPP_
 
 #include <memory>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 #include <rviz_common/properties/bool_property.hpp>
 #include <rviz_common/properties/color_property.hpp>
@@ -106,7 +106,7 @@ private:
   void updateTextScale(const VisualPtr & constraint);
   void updateVisibility(const VisualPtr & constraint);
 
-  robin_hood::unordered_map<fuse_core::UUID, VisualPtr, fuse_core::uuid::hash> variables_;
+  UnorderedMap<fuse_core::UUID, VisualPtr, fuse_core::uuid::hash> variables_;
 
   rviz_common::properties::ColorProperty * color_property_;
   rviz_common::properties::BoolProperty * show_text_property_;

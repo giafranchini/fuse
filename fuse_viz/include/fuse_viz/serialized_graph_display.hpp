@@ -49,7 +49,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 namespace fuse_viz
 {
@@ -63,7 +63,7 @@ class Pose2DStampedProperty;
 class RelativePose2DStampedConstraintProperty;
 
 /**
- * @brief An rviz dispaly for fuse_msgs::msg::SerializedGraph messages.
+ * @brief An rviz display for fuse_msgs::msg::SerializedGraph messages.
  */
 class SerializedGraphDisplay
   : public rviz_common::MessageFilterDisplay<fuse_msgs::msg::SerializedGraph>
@@ -91,14 +91,14 @@ private Q_SLOTS:
   void updateShowConstraints();
 
 private:
-  using ChangedByUUIDMap = robin_hood::unordered_map<fuse_core::UUID, bool, fuse_core::uuid::hash>;
+  using ChangedByUUIDMap = UnorderedMap<fuse_core::UUID, bool, fuse_core::uuid::hash>;
   using ConstraintByUUIDMap =
-    robin_hood::unordered_map<fuse_core::UUID, std::shared_ptr<RelativePose2DStampedConstraintVisual>,
+    UnorderedMap<fuse_core::UUID, std::shared_ptr<RelativePose2DStampedConstraintVisual>,
       fuse_core::uuid::hash>;
-  using ColorBySourceMap = robin_hood::unordered_map<std::string, Ogre::ColourValue>;
+  using ColorBySourceMap = UnorderedMap<std::string, Ogre::ColourValue>;
   using ConstraintPropertyBySourceMap = std::map<std::string,
       RelativePose2DStampedConstraintProperty *>;
-  using ConfigBySourceMap = robin_hood::unordered_map<std::string, rviz_common::Config>;
+  using ConfigBySourceMap = UnorderedMap<std::string, rviz_common::Config>;
 
   void clear();
 

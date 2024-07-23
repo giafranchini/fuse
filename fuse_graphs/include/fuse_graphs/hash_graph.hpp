@@ -38,9 +38,7 @@
 #include <ceres/problem.h>
 #include <ceres/solver.h>
 
-#include <fuse_core/robin_hood.hpp>
-//#include <unordered_set>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 #include <utility>
 #include <vector>
 
@@ -393,12 +391,12 @@ public:
 
 protected:
   // Define some helpful typedefs
-  using Constraints = robin_hood::unordered_map<fuse_core::UUID, fuse_core::Constraint::SharedPtr,
+  using Constraints = UnorderedMap<fuse_core::UUID, fuse_core::Constraint::SharedPtr,
       fuse_core::uuid::hash>;
-  using Variables = robin_hood::unordered_map<fuse_core::UUID, fuse_core::Variable::SharedPtr,
+  using Variables = UnorderedMap<fuse_core::UUID, fuse_core::Variable::SharedPtr,
       fuse_core::uuid::hash>;
-  using VariableSet = robin_hood::unordered_set<fuse_core::UUID, fuse_core::uuid::hash>;
-  using CrossReference = robin_hood::unordered_map<fuse_core::UUID, std::vector<fuse_core::UUID>,
+  using VariableSet = UnorderedSet<fuse_core::UUID, fuse_core::uuid::hash>;
+  using CrossReference = UnorderedMap<fuse_core::UUID, std::vector<fuse_core::UUID>,
       fuse_core::uuid::hash>;
 
   Constraints constraints_;  //!< The set of all constraints

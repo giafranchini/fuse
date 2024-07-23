@@ -40,7 +40,7 @@
 
 #include <memory>
 #include <string>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 #include <fuse_viz/mapped_covariance_visual.hpp>
 
@@ -65,7 +65,7 @@ namespace fuse_viz
  * @brief Property specialized to provide getter for booleans.
  *
  * This is mostly a copy of CovarianceProperty from rviz/default_plugin/covariance_property.h that
- * instead of using an std::deque to store the visuals, it uses an robin_hood::unordered_map, so the
+ * instead of using an std::deque to store the visuals, it uses an UnorderedMap, so the
  * visuals can be indexed by their UUID.
  */
 class MappedCovarianceProperty : public rviz_common::properties::BoolProperty
@@ -118,7 +118,7 @@ private:
   void updateOrientationFrame(const MappedCovarianceVisualPtr & visual);
   void updateVisibility(const MappedCovarianceVisualPtr & visual);
 
-  robin_hood::unordered_map<std::string, MappedCovarianceVisualPtr> covariances_;
+  UnorderedMap<std::string, MappedCovarianceVisualPtr> covariances_;
 
   rviz_common::properties::BoolProperty * position_property_;
   rviz_common::properties::ColorProperty * position_color_property_;

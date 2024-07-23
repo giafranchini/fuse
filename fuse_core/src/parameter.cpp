@@ -36,13 +36,12 @@
 
 #include <cassert>
 #include <string>
-//#include <unordered_set>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 
 namespace fuse_core
 {
-robin_hood::unordered_set<std::string>
+UnorderedSet<std::string>
 list_parameter_override_prefixes(
   node_interfaces::NodeInterfaces<node_interfaces::Parameters> interfaces,
   std::string prefix)
@@ -52,7 +51,7 @@ list_parameter_override_prefixes(
   return detail::list_parameter_override_prefixes(overrides, prefix);
 }
 
-robin_hood::unordered_set<std::string>
+UnorderedSet<std::string>
 detail::list_parameter_override_prefixes(
   const std::map<std::string, rclcpp::ParameterValue> & overrides,
   std::string prefix)
@@ -66,7 +65,7 @@ detail::list_parameter_override_prefixes(
     prefix += kParamSeparator;
   }
 
-  robin_hood::unordered_set<std::string> output_names;
+  UnorderedSet<std::string> output_names;
   for (const auto & kv : overrides) {
     const std::string & name = kv.first;
     if (name.size() <= prefix.size()) {

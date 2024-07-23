@@ -39,9 +39,8 @@
 #include <iterator>
 #include <ostream>
 #include <string>
-//#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 #include <vector>
-#include <fuse_core/robin_hood.hpp>
 
 
 /**
@@ -67,14 +66,14 @@ std::ostream & operator<<(std::ostream & os, const std::vector<T> & v)
 }
 
 /**
- * @brief Helper function to print the keys of robin_hood::unordered_map<K, V> objects
+ * @brief Helper function to print the keys of UnorderedMap<K, V> objects
  *
  * @param[in, out] os An output stream
  * @param[in] m An unordered map with the keys to print into the stream
  * @return The output stream with the vector printed into it
  */
 template<typename K, typename V>
-std::ostream & operator<<(std::ostream & os, const robin_hood::unordered_map<K, V> & m)
+std::ostream & operator<<(std::ostream & os, const UnorderedMap<K, V> & m)
 {
   os << '[';
 
@@ -89,7 +88,7 @@ std::ostream & operator<<(std::ostream & os, const robin_hood::unordered_map<K, 
 
 /**
  * @brief Helper function to compute the symmetric difference between a sorted
- *        std::vector<std::string> and the keys of an robin_hood::unordered_map<std::string, T>
+ *        std::vector<std::string> and the keys of an UnorderedMap<std::string, T>
  *
  * @param[in] lhs A sorted vector of strings
  * @param[in] rhs An unordered map of key strings
@@ -98,7 +97,7 @@ std::ostream & operator<<(std::ostream & os, const robin_hood::unordered_map<K, 
 template<typename T>
 std::vector<std::string> set_symmetric_difference(
   const std::vector<std::string> & lhs,
-  const robin_hood::unordered_map<std::string, T> & rhs)
+  const UnorderedMap<std::string, T> & rhs)
 {
   // Retrieve the keys:
   std::vector<std::string> rhs_keys;

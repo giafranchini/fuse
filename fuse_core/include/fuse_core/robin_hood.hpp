@@ -912,7 +912,7 @@ class Table
       detail::NodeAllocator<
           typename std::conditional<
               std::is_void<T>::value, Key,
-              robin_hood::pair<typename std::conditional<IsFlat, Key, Key const>::type, T>>::type,
+              std::pair<typename std::conditional<IsFlat, Key, Key const>::type, T>>::type,
           4, 16384, IsFlat> {
 public:
     static constexpr bool is_flat = IsFlat;
@@ -925,7 +925,7 @@ public:
     using mapped_type = T;
     using value_type = typename std::conditional<
         is_set, Key,
-        robin_hood::pair<typename std::conditional<is_flat, Key, Key const>::type, T>>::type;
+        std::pair<typename std::conditional<is_flat, Key, Key const>::type, T>>::type;
     using size_type = size_t;
     using hasher = Hash;
     using key_equal = KeyEqual;
@@ -1134,7 +1134,7 @@ private:
         return k;
     }
 
-    // in case we have non-void mapped_type, we have a standard robin_hood::pair
+    // in case we have non-void mapped_type, we have a standard std::pair
     template <typename Q = mapped_type>
     ROBIN_HOOD(NODISCARD)
     typename std::enable_if<!std::is_void<Q>::value, key_type const&>::type
@@ -2253,7 +2253,7 @@ private:
 
     ROBIN_HOOD(NOINLINE) void throwOverflowError() const {
 #if ROBIN_HOOD(HAS_EXCEPTIONS)
-        throw std::overflow_error("robin_hood::map overflow");
+        throw std::overflow_error("std::map overflow");
 #else
         abort();
 #endif
@@ -2520,9 +2520,9 @@ using unordered_node_map = detail::Table<false, MaxLoadFactor100, Key, T, Hash, 
 template <typename Key, typename T, typename Hash = hash<Key>,
           typename KeyEqual = std::equal_to<Key>, size_t MaxLoadFactor100 = 80>
 using unordered_map =
-    detail::Table<sizeof(robin_hood::pair<Key, T>) <= sizeof(size_t) * 6 &&
-                      std::is_nothrow_move_constructible<robin_hood::pair<Key, T>>::value &&
-                      std::is_nothrow_move_assignable<robin_hood::pair<Key, T>>::value,
+    detail::Table<sizeof(std::pair<Key, T>) <= sizeof(size_t) * 6 &&
+                      std::is_nothrow_move_constructible<std::pair<Key, T>>::value &&
+                      std::is_nothrow_move_assignable<std::pair<Key, T>>::value,
                   MaxLoadFactor100, Key, T, Hash, KeyEqual>;
 
 // set

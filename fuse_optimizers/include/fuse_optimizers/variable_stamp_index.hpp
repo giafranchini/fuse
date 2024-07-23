@@ -35,9 +35,7 @@
 #ifndef FUSE_OPTIMIZERS__VARIABLE_STAMP_INDEX_HPP_
 #define FUSE_OPTIMIZERS__VARIABLE_STAMP_INDEX_HPP_
 
-#include <fuse_core/robin_hood.hpp>
-//#include <unordered_set>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 
 #include <fuse_core/fuse_macros.hpp>
 #include <fuse_core/transaction.hpp>
@@ -128,7 +126,7 @@ public:
   void query(const rclcpp::Time & stamp, OutputUuidIterator result) const
   {
     // First get all of the stamped variables greater than or equal to the input stamp
-    robin_hood::unordered_set<fuse_core::UUID> recent_variable_uuids;
+    UnorderedSet<fuse_core::UUID> recent_variable_uuids;
     for (const auto & variable_stamp_pair : stamped_index_) {
       if (variable_stamp_pair.second >= stamp) {
         recent_variable_uuids.insert(variable_stamp_pair.first);
@@ -136,7 +134,7 @@ public:
     }
 
     // Now find all of the variables connected to the recent variables
-    robin_hood::unordered_set<fuse_core::UUID> connected_variable_uuids;
+    UnorderedSet<fuse_core::UUID> connected_variable_uuids;
     for (const auto & recent_variable_uuid : recent_variable_uuids) {
       // Add the recent variable to ensure connected_variable_uuids is a superset of
       // recent_variable_uuids
@@ -165,16 +163,16 @@ public:
   }
 
 protected:
-  using StampedMap = robin_hood::unordered_map<fuse_core::UUID, rclcpp::Time>;
+  using StampedMap = UnorderedMap<fuse_core::UUID, rclcpp::Time>;
   StampedMap stamped_index_;  //!< Container that holds the UUID->Stamp mapping for
                               //!< fuse_variables::Stamped variables
 
-  using VariableToConstraintsMap = robin_hood::unordered_map<fuse_core::UUID,
-      robin_hood::unordered_set<fuse_core::UUID>>;
+  using VariableToConstraintsMap = UnorderedMap<fuse_core::UUID,
+      UnorderedSet<fuse_core::UUID>>;
   VariableToConstraintsMap variables_;
 
-  using ConstraintToVariablesMap = robin_hood::unordered_map<fuse_core::UUID,
-      robin_hood::unordered_set<fuse_core::UUID>>;
+  using ConstraintToVariablesMap = UnorderedMap<fuse_core::UUID,
+      UnorderedSet<fuse_core::UUID>>;
   ConstraintToVariablesMap constraints_;
 
   /**

@@ -37,8 +37,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
-//#include <unordered_set>
-#include <fuse_core/robin_hood.hpp>
+#include <fuse_core/types.hpp>
 #include <vector>
 
 #include <fuse_core/eigen.hpp>
@@ -135,7 +134,7 @@ namespace detail
 /** @brief Internal function for unit testing.
  * @internal
 */
-robin_hood::unordered_set<std::string>
+UnorderedSet<std::string>
 list_parameter_override_prefixes(
   const std::map<std::string, rclcpp::ParameterValue> & overrides,
   std::string prefix);
@@ -163,7 +162,7 @@ list_parameter_override_prefixes(
  * @param[in] max_depth - how deep to return parameter override names, or 0 for
  *    unlimited depth.
 */
-robin_hood::unordered_set<std::string>
+UnorderedSet<std::string>
 list_parameter_override_prefixes(
   node_interfaces::NodeInterfaces<node_interfaces::Parameters> interfaces,
   std::string prefix);
