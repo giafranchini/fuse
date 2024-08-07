@@ -106,4 +106,3 @@ TEST(Util, quaternion2rpy)
 
 //TODO(giafranchini): Add test for quaternionProduct
 //TODO(giafranchini): Add test for quaternionInverse
-

@@ -6,14 +6,14 @@
 
 namespace fuse_optimizers
 {
-  class FixedLagSmootherComponent : public rclcpp::Node
-  {
-  public:
-    explicit FixedLagSmootherComponent(const rclcpp::NodeOptions& options);
+class FixedLagSmootherComponent : public rclcpp::Node
+{
+public:
+  explicit FixedLagSmootherComponent(const rclcpp::NodeOptions & options);
 
-  private:  
-    std::shared_ptr<FixedLagSmoother> fixed_lag_smoother_;
-  };
+private:
+  std::shared_ptr<FixedLagSmoother> fixed_lag_smoother_;
+};
 }  // namespace fuse_optimizers
 
 #endif  // FUSE_OPTIMIZERS__FIXED_LAG_SMOOTHER_COMPONENT_HPP_

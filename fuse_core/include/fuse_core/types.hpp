@@ -7,10 +7,10 @@
 #ifdef USE_ROBIN_HOOD
 #include <fuse_core/robin_hood.hpp>
 template<
-  class Key, 
-  class T, 
-  class Hash = std::hash<Key>, 
-  class KeyEqual = std::equal_to<Key>, 
+  class Key,
+  class T,
+  class Hash = std::hash<Key>,
+  class KeyEqual = std::equal_to<Key>,
   class Allocator = std::allocator<std::pair<const Key, T>>
 > using UnorderedMap = robin_hood::unordered_map<Key, T, Hash, KeyEqual, Allocator>;
 
@@ -25,10 +25,10 @@ template<
 #include <unordered_map>
 #include <unordered_set>
 template<
-  class Key, 
-  class T, 
-  class Hash = std::hash<Key>, 
-  class KeyEqual = std::equal_to<Key>, 
+  class Key,
+  class T,
+  class Hash = std::hash<Key>,
+  class KeyEqual = std::equal_to<Key>,
   class Allocator = std::allocator<std::pair<const Key, T>>
 > using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, Allocator>;
 
