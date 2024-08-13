@@ -5,3 +5,10 @@
     </description>
   </class>
 </library>
+<library path="fuse_viz">
+  <class name="fuse_viz/SerializedGraph3D" type="fuse_viz::SerializedGraphDisplay3D" base_class_type="rviz_common::Display">
+    <description>
+    An rviz display for fuse_msgs::msg::SerializedGraph messages.
+    </description>
+  </class>
+</library>

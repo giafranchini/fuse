@@ -51,7 +51,9 @@
 #include <fuse_core/graph.hpp>
 #include <fuse_core/uuid.hpp>
 #include <fuse_variables/orientation_2d_stamped.hpp>
+#include <fuse_variables/orientation_3d_stamped.hpp>
 #include <fuse_variables/position_2d_stamped.hpp>
+#include <fuse_variables/position_3d_stamped.hpp>
 
 
 namespace tf2
@@ -93,9 +95,26 @@ inline tf2::Quaternion toTF(const fuse_variables::Orientation2DStamped & orienta
   return {tf2::Vector3{0, 0, 1}, orientation.yaw()};
 }
 
+inline tf2::Vector3 toTF(const fuse_variables::Position3DStamped & position)
+{
+  return {position.x(), position.y(), position.z()};
+}
+
+inline tf2::Quaternion toTF(const fuse_variables::Orientation3DStamped & orientation)
+{
+  return {orientation.x(), orientation.y(), orientation.z(), orientation.w()};
+}
+
 inline tf2::Transform toTF(
   const fuse_variables::Position2DStamped & position,
   const fuse_variables::Orientation2DStamped & orientation)
+{
+  return tf2::Transform(toTF(orientation), toTF(position));
+}
+
+inline tf2::Transform toTF(
+  const fuse_variables::Position3DStamped & position,
+  const fuse_variables::Orientation3DStamped & orientation)
 {
   return tf2::Transform(toTF(orientation), toTF(position));
 }
@@ -122,6 +141,16 @@ inline Ogre::Quaternion toOgre(const fuse_variables::Orientation2DStamped & orie
   return toOgre(toTF(orientation));
 }
 
+inline Ogre::Vector3 toOgre(const fuse_variables::Position3DStamped & position)
+{
+  return {static_cast<float>(position.x()), static_cast<float>(position.y()), static_cast<float>(position.z())};
+}
+
+inline Ogre::Quaternion toOgre(const fuse_variables::Orientation3DStamped & orientation)
+{
+  return toOgre(toTF(orientation));
+}
+
 }  // namespace
 
 namespace
@@ -130,6 +159,13 @@ namespace
 inline tf2::Transform getPose(
   const fuse_variables::Position2DStamped & position,
   const fuse_variables::Orientation2DStamped & orientation)
+{
+  return tf2::Transform(toTF(orientation), toTF(position));
+}
+
+inline tf2::Transform getPose(
+  const fuse_variables::Position3DStamped & position,
+  const fuse_variables::Orientation3DStamped & orientation)
 {
   return tf2::Transform(toTF(orientation), toTF(position));
 }
@@ -152,6 +188,29 @@ inline tf2::Transform getPose(
     throw std::runtime_error(
             "Failed to get variable " + fuse_core::uuid::to_string(orientation_uuid) +
             " from graph as fuse_variables::Orientation2DStamped.");
+  }
+
+  return getPose(*position, *orientation);
+}
+
+inline tf2::Transform getPose3D(
+  const fuse_core::Graph & graph, const fuse_core::UUID & position_uuid,
+  const fuse_core::UUID & orientation_uuid)
+{
+  const auto position =
+    dynamic_cast<const fuse_variables::Position3DStamped *>(&graph.getVariable(position_uuid));
+  if (!position) {
+    throw std::runtime_error(
+            "Failed to get variable " + fuse_core::uuid::to_string(position_uuid) +
+            " from graph as fuse_variables::Position3DStamped.");
+  }
+
+  const auto orientation = dynamic_cast<const fuse_variables::Orientation3DStamped *>(
+    &graph.getVariable(orientation_uuid));
+  if (!orientation) {
+    throw std::runtime_error(
+            "Failed to get variable " + fuse_core::uuid::to_string(orientation_uuid) +
+            " from graph as fuse_variables::Orientation3DStamped.");
   }
 
   return getPose(*position, *orientation);

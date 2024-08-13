@@ -32,8 +32,11 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 qt5_wrap_cpp(moc_files
   include/fuse_viz/mapped_covariance_property.hpp
   include/fuse_viz/pose_2d_stamped_property.hpp
+  include/fuse_viz/pose_3d_stamped_property.hpp
   include/fuse_viz/relative_pose_2d_stamped_constraint_property.hpp
+  include/fuse_viz/relative_pose_3d_stamped_constraint_property.hpp
   include/fuse_viz/serialized_graph_display.hpp
+  include/fuse_viz/serialized_graph_display_3d.hpp
 )
 
 add_library(${PROJECT_NAME} SHARED
@@ -41,9 +44,14 @@ add_library(${PROJECT_NAME} SHARED
   src/mapped_covariance_visual.cpp
   src/pose_2d_stamped_property.cpp
   src/pose_2d_stamped_visual.cpp
+  src/pose_3d_stamped_property.cpp
+  src/pose_3d_stamped_visual.cpp
   src/relative_pose_2d_stamped_constraint_property.cpp
   src/relative_pose_2d_stamped_constraint_visual.cpp
+  src/relative_pose_3d_stamped_constraint_property.cpp
+  src/relative_pose_3d_stamped_constraint_visual.cpp
   src/serialized_graph_display.cpp
+  src/serialized_graph_display_3d.cpp
   ${moc_files}
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE
