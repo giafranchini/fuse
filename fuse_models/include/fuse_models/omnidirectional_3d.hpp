@@ -31,8 +31,8 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef FUSE_MODELS__UNICYCLE_3D_HPP_
-#define FUSE_MODELS__UNICYCLE_3D_HPP_
+#ifndef FUSE_MODELS__OMNIDIRECTIONAL_3D_HPP_
+#define FUSE_MODELS__OMNIDIRECTIONAL_3D_HPP_
 
 #include <map>
 #include <string>
@@ -241,4 +241,4 @@ std::ostream & operator<<(std::ostream & stream, const Omnidirectional3D & unicy
 
 }  // namespace fuse_models
 
-#endif  // FUSE_MODELS__UNICYCLE_3D_HPP_
+#endif  // FUSE_MODELS__OMNIDIRECTIONAL_3D_HPP_
