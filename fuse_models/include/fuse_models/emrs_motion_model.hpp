@@ -256,6 +256,9 @@ protected:
                                   //!< it is scaled and multiplied by dt
   StateHistory state_history_;    //!< History of optimized graph pose estimates
 
+  int icr_buffer_length_ {10};  //!< The length of the TF2 buffer in seconds
+  rclcpp::Duration icr_buffer_timeout_ {0, 0};  //!< The maximum time to wait for a transform to become
+                                                //!< available
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_; //!< TF2 buffer for ICR transforms
   std::shared_ptr<fuse_models::ICRListener> icr_listener_;  //!< ICR position listener
 };

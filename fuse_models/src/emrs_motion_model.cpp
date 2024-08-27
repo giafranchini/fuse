@@ -263,8 +263,21 @@ void EMRSMotionModel::onInit()
 
   device_id_ = fuse_variables::loadDeviceId(interfaces_);
 
+  icr_buffer_length_ =     
+    fuse_core::getParam(
+    interfaces_, fuse_core::joinParameterName(
+      name_,
+      "icr_buffer_length"),
+    icr_buffer_length_);
+  
+  fuse_core::getPositiveParam(
+    interfaces_, fuse_core::joinParameterName(
+      name_,
+      "icr_buffer_timeout"), icr_buffer_timeout_,
+    false);
+
   // Initialize the TF2 buffer
-  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(clock_);
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(clock_, std::chrono::seconds(icr_buffer_length_));
 
   // Initialize the ICR listener with a dedicated thread
   icr_listener_ = std::make_shared<ICRListener>(
@@ -644,9 +657,8 @@ void EMRSMotionModel::adjustState(StateHistoryElement & state, const rclcpp::Tim
   // Get ICR transform at current state timestamp
   geometry_msgs::msg::TransformStamped icr_tf;
   try {
-    // TODO(giafranchini): should we add a timeout here?
     icr_tf = tf_buffer_->lookupTransform(
-      "base_link", "icr", timestamp);
+      "a", "b", timestamp, icr_buffer_timeout_);
   } catch (const tf2::TransformException & ex) {
     RCLCPP_WARN_STREAM(
       rclcpp::get_logger("fuse"),
@@ -656,12 +668,10 @@ void EMRSMotionModel::adjustState(StateHistoryElement & state, const rclcpp::Tim
   }
 
   // Adjust state with ICR information
-  if (std::isfinite(icr_tf.transform.translation.x) && std::isfinite(icr_tf.transform.translation.y)) {
-    RCLCPP_DEBUG_STREAM(logger_, "ICR not at infinity, robot is turning.");
+  if (std::isfinite(icr_tf.transform.translation.x) || std::isfinite(icr_tf.transform.translation.y)) {
     fuse_core::Vector3d icr_position(icr_tf.transform.translation.x, icr_tf.transform.translation.y, 0.0);
     state.vel_linear = state.vel_angular.cross(icr_position);  
   } else {
-    RCLCPP_DEBUG_STREAM(logger_, "ICR at infinity, robot is moving straight.");
     state.vel_angular.setZero();
   }
 }

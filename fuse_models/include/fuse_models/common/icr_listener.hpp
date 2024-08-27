@@ -123,10 +123,13 @@ public:
   }
 
   /// Callback function for ICR position message subscription 
+
+  // let base_link be frame a, and icr be frame b
   void subscription_callback(const emrs_interfaces::msg::Point2DStamped & msg) {
     geometry_msgs::msg::TransformStamped transform;
-    transform.header = msg.header;
-    transform.child_frame_id = "icr";
+    transform.header.stamp = msg.header.stamp;
+    transform.header.frame_id = "a";
+    transform.child_frame_id = "b";
     transform.transform.translation.x = msg.x;
     transform.transform.translation.y = msg.y;
 
