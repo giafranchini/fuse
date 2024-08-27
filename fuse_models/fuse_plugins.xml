@@ -24,6 +24,14 @@
     those constraints to the fuse graph.
     </description>
   </class>
+
+  <class type="fuse_models::EMRSMotionModel" base_class_type="fuse_core::MotionModel">
+    <description>
+    A fuse_models 3D kinematic model that generates kinematic constraints between provided time stamps, and adds
+    those constraints to the fuse graph. The base kinematic model is the Omnidirectional3D motion model, where the 
+    initial state is adjusted using ICR position information from EMRS locomotion system.
+    </description>
+  </class>
   
   <class type="fuse_models::Odometry2DPublisher" base_class_type="fuse_core::Publisher">
     <description>

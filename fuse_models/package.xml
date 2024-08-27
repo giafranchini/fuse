@@ -18,6 +18,7 @@
   <depend>eigen</depend>
 
   <build_depend>covariance_geometry_ros</build_depend>
+  <build_depend>emrs_interfaces</build_depend>
   <build_depend>fuse_constraints</build_depend>
   <build_depend>fuse_core</build_depend>
   <build_depend>fuse_graphs</build_depend>

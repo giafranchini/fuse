@@ -14,6 +14,7 @@ endif()
 find_package(ament_cmake_ros REQUIRED)
 
 find_package(covariance_geometry_ros REQUIRED)
+find_package(emrs_interfaces REQUIRED)
 find_package(fuse_constraints REQUIRED)
 find_package(fuse_core REQUIRED)
 find_package(fuse_graphs REQUIRED)
@@ -58,6 +59,7 @@ add_library(${PROJECT_NAME}
   src/omnidirectional_3d.cpp
   src/omnidirectional_3d_ignition.cpp
   src/omnidirectional_3d_state_kinematic_constraint.cpp
+  src/emrs_motion_model.cpp
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -66,6 +68,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   covariance_geometry_ros::covariance_geometry_ros
   Ceres::ceres
+  ${emrs_interfaces_TARGETS}
   fuse_constraints::fuse_constraints
   fuse_core::fuse_core
   fuse_graphs::fuse_graphs
@@ -124,6 +127,7 @@ ament_export_dependencies(
   ament_cmake_ros
 
   covariance_geometry_ros
+  emrs_interfaces
   fuse_constraints
   fuse_core
   fuse_graphs
