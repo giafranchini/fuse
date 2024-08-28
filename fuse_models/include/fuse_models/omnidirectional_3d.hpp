@@ -47,6 +47,7 @@
 #include <fuse_core/timestamp_manager.hpp>
 #include <fuse_core/transaction.hpp>
 #include <fuse_core/variable.hpp>
+#include <fuse_models/parameters/omnidirectional_3d_params.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 namespace fuse_models
@@ -74,6 +75,7 @@ class Omnidirectional3D : public fuse_core::AsyncMotionModel
 {
 public:
   FUSE_SMART_PTR_DEFINITIONS_WITH_EIGEN(Omnidirectional3D)
+  using ParameterType = parameters::Omnidirectional3DParams;
 
   /**
    * @brief Default constructor
@@ -235,6 +237,8 @@ protected:
                                   //!< predicted state, including the process noise covariance after
                                   //!< it is scaled and multiplied by dt
   StateHistory state_history_;    //!< History of optimized graph pose estimates
+
+  ParameterType params_;  //!< The parameters for this motion model
 };
 
 std::ostream & operator<<(std::ostream & stream, const Omnidirectional3D & omnidirectional_3d);

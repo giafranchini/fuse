@@ -48,6 +48,7 @@
 #include <fuse_core/transaction.hpp>
 #include <fuse_core/variable.hpp>
 #include <fuse_models/common/icr_listener.hpp>
+#include <fuse_models/parameters/omnidirectional_3d_params.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "tf2_ros/buffer.h"
 
@@ -77,6 +78,7 @@ class EMRSMotionModel : public fuse_core::AsyncMotionModel
 {
 public:
   FUSE_SMART_PTR_DEFINITIONS_WITH_EIGEN(EMRSMotionModel)
+  using ParameterType = parameters::Omnidirectional3DParams;
 
   /**
    * @brief Default constructor
@@ -101,6 +103,7 @@ public:
 
 protected:
   /**
+   * TODO(giafranchini): should we delete acc_linear from the state history elements?
    * @brief Structure used to maintain a history of "good" pose estimates
    */
   struct StateHistoryElement
@@ -261,6 +264,8 @@ protected:
                                                 //!< available
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_; //!< TF2 buffer for ICR transforms
   std::shared_ptr<fuse_models::ICRListener> icr_listener_;  //!< ICR position listener
+  
+  ParameterType params_;  //!< The parameters for this motion model
 };
 
 std::ostream & operator<<(std::ostream & stream, const EMRSMotionModel & emrs_motion_model);

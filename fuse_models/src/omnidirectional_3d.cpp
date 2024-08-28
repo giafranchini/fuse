@@ -202,66 +202,14 @@ void Omnidirectional3D::onInit()
   logger_ = interfaces_.get_node_logging_interface()->get_logger();
   clock_ = interfaces_.get_node_clock_interface()->get_clock();
 
-  std::vector<double> process_noise_diagonal;
-  process_noise_diagonal =
-    fuse_core::getParam(
-    interfaces_, fuse_core::joinParameterName(
-      name_,
-      "process_noise_diagonal"),
-    process_noise_diagonal);
+  // Read settings from the parameter sever
+  device_id_ = fuse_variables::loadDeviceId(interfaces_);
 
-  if (process_noise_diagonal.size() != 15) {
-    throw std::runtime_error("Process noise diagonal must be of length 15!");
-  }
-
-  process_noise_covariance_ = fuse_core::Vector15d(process_noise_diagonal.data()).asDiagonal();
-
-  scale_process_noise_ =
-    fuse_core::getParam(
-    interfaces_, fuse_core::joinParameterName(
-      name_,
-      "scale_process_noise"),
-    scale_process_noise_);
-  velocity_linear_norm_min_ =
-    fuse_core::getParam(
-    interfaces_, fuse_core::joinParameterName(
-      name_,
-      "velocity_linear_norm_min"),
-    velocity_linear_norm_min_);
-
-  velocity_angular_norm_min_ =
-    fuse_core::getParam(
-    interfaces_, fuse_core::joinParameterName(
-      name_,
-      "velocity_angular_norm_min"),
-    velocity_angular_norm_min_);
-
-  disable_checks_ =
-    fuse_core::getParam(
-    interfaces_, fuse_core::joinParameterName(
-      name_,
-      "disable_checks"),
-    disable_checks_);
-
-  double buffer_length = 3.0;
-  buffer_length =
-    fuse_core::getParam(
-    interfaces_, fuse_core::joinParameterName(
-      name_,
-      "buffer_length"),
-    buffer_length);
-
-  if (buffer_length < 0.0) {
-    throw std::runtime_error(
-            "Invalid negative buffer length of " + std::to_string(buffer_length) + " specified.");
-  }
+  params_.loadFromROS(interfaces_, name_);
 
   buffer_length_ =
-    (buffer_length ==
-    0.0) ? rclcpp::Duration::max() : rclcpp::Duration::from_seconds(buffer_length);
+    (params_.buffer_length == 0.0) ? rclcpp::Duration::max() : rclcpp::Duration::from_seconds(params_.buffer_length);
   timestamp_manager_.bufferLength(buffer_length_);
-
-  device_id_ = fuse_variables::loadDeviceId(interfaces_);
 }
 
 void Omnidirectional3D::onStart()
@@ -442,17 +390,17 @@ void Omnidirectional3D::generateMotionModel(
   state_history_.emplace(ending_stamp, std::move(state2));
 
   // Scale process noise covariance pose by the norm of the current state twist
-  auto process_noise_covariance = process_noise_covariance_;
-  if (scale_process_noise_) {
+  auto process_noise_covariance = params_.process_noise_covariance;
+  if (params_.scale_process_noise) {
     common::scaleProcessNoiseCovariance(
       process_noise_covariance, state1.vel_linear, state1.vel_angular,
-      velocity_linear_norm_min_, velocity_angular_norm_min_);
+      params_.velocity_linear_norm_min, params_.velocity_angular_norm_min);
   }
 
   // Validate
   process_noise_covariance *= dt;
 
-  if (!disable_checks_) {
+  if (!params_.disable_checks) {
     try {
       validateMotionModel(state1, state2, process_noise_covariance);
     } catch (const std::runtime_error & ex) {
