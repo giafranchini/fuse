@@ -33,6 +33,8 @@
  */
 #include <Eigen/Dense>
 #include <tf2/utils.h>
+#include <tf2/transform_storage.h>
+#include <tf2/exceptions.h>
 
 #include <stdexcept>
 #include <string>
@@ -208,7 +210,8 @@ void EMRSMotionModel::onInit()
   params_.loadFromROS(interfaces_, name_);
 
   buffer_length_ =
-    (params_.buffer_length == 0.0) ? rclcpp::Duration::max() : rclcpp::Duration::from_seconds(params_.buffer_length);
+    (params_.buffer_length == 0.0) ? rclcpp::Duration::max() : rclcpp::Duration::from_seconds(
+    params_.buffer_length);
   timestamp_manager_.bufferLength(buffer_length_);
 
   fuse_core::getPositiveParam(
@@ -222,13 +225,13 @@ void EMRSMotionModel::onInit()
       name_,
       "icr_buffer_timeout"), icr_buffer_timeout_,
     false);
- 
-  // Initialize the TF2 buffer
-  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(clock_, std::chrono::seconds(icr_buffer_length_));
+
+  // Initialize the TF2 time cache
+  tf_cache_ = std::make_unique<tf2::TimeCache>(std::chrono::seconds(icr_buffer_length_));
 
   // Initialize the ICR listener with a dedicated thread
   icr_listener_ = std::make_shared<ICRListener>(
-    *tf_buffer_,
+    *tf_cache_,
     interfaces_.get_node_base_interface(),
     interfaces_.get_node_logging_interface(),
     interfaces_.get_node_parameters_interface(),
@@ -240,7 +243,6 @@ void EMRSMotionModel::onStart()
 {
   timestamp_manager_.clear();
   state_history_.clear();
-  tf_buffer_->clear();
 }
 
 void EMRSMotionModel::generateMotionModel(
@@ -602,22 +604,30 @@ void EMRSMotionModel::validateMotionModel(
 void EMRSMotionModel::adjustState(StateHistoryElement & state, const rclcpp::Time & timestamp)
 {
   // Get ICR transform at current state timestamp
-  geometry_msgs::msg::TransformStamped icr_tf;
-  try {
-    icr_tf = tf_buffer_->lookupTransform(
-      "a", "b", timestamp, icr_buffer_timeout_);
-  } catch (const tf2::TransformException & ex) {
+  tf2::Transform icr_tf;
+  tf2::TransformStorage icr_tf_storage;
+  std::string error_str;
+  tf2::TF2Error error_code;
+  auto stamp = tf2::timeFromSec(timestamp.seconds() + timestamp.nanoseconds() * 1e-9);
+  tf_cache_->getData(stamp, icr_tf_storage, &error_str, &error_code);
+
+  if (error_code == tf2::TF2Error::TF2_FORWARD_EXTRAPOLATION_ERROR) {
+    // If not moving, ICR transform is not updated. Just get the latest transform
+    icr_tf = icr_listener_->getLastTransform();
+  } else if (error_code == tf2::TF2Error::TF2_NO_ERROR) {
+    icr_tf.setOrigin(icr_tf_storage.translation_);
+  } else {
+    // If we don't have an ICR transform, we can't adjust the state, return
     RCLCPP_WARN_STREAM(
       rclcpp::get_logger("fuse"),
-      "Could not transform message from base_link to icr. Error was " << ex.what());
-    // If we don't have an ICR transform, we can't adjust the state, return
+      "Could not transform message from base_link to icr. Error was " << error_str);
     return;
   }
 
-  // Adjust state with ICR information
-  if (std::isfinite(icr_tf.transform.translation.x) || std::isfinite(icr_tf.transform.translation.y)) {
-    fuse_core::Vector3d icr_position(icr_tf.transform.translation.x, icr_tf.transform.translation.y, 0.0);
-    state.vel_linear = state.vel_angular.cross(icr_position);  
+  // Adjust the base state with ICR information
+  fuse_core::Vector3d icr_pos(icr_tf.getOrigin().x(), icr_tf.getOrigin().y(), 0.0);
+  if (std::isfinite(icr_pos)) {
+    state.vel_linear = state.vel_angular.cross(icr_pos);
   } else {
     state.vel_angular.setZero();
   }

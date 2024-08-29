@@ -34,6 +34,8 @@
 #ifndef FUSE_MODELS__EMRS_MOTION_MODEL_HPP_
 #define FUSE_MODELS__EMRS_MOTION_MODEL_HPP_
 
+#include <tf2/time_cache.h>
+
 #include <map>
 #include <string>
 #include <utility>
@@ -169,13 +171,6 @@ protected:
     std::vector<fuse_core::Variable::SharedPtr> & variables);
 
   /**
-   * @brief Callback function for EMRS ICR position message subscription 
-   *
-   * @param[in]  msg  The message containing the ICR position wrt the rover base_link frame
-   */
-  void subscriptionCallback(const emrs_interfaces::msg::Point2DStamped & msg);
-
-  /**
    * @brief Callback fired in the local callback queue thread(s) whenever a new Graph is received
    *        from the optimizer
    * @param[in] graph A read-only pointer to the graph object, allowing queries to be performed
@@ -219,17 +214,17 @@ protected:
   static void validateMotionModel(
     const StateHistoryElement & state1, const StateHistoryElement & state2,
     const fuse_core::Matrix15d & process_noise_covariance);
-  
+
   /**
    * @brief Adjust the first state of the motion model, based on icr transform
-   * 
+   *
    * @param[in]  state      The state to be adjusted
    * @param[in]  timestamp  The timestamp of the state
-   * 
+   *
    */
 
   void adjustState(StateHistoryElement & state, const rclcpp::Time & timestamp);
-  
+
   fuse_core::node_interfaces::NodeInterfaces<
     fuse_core::node_interfaces::Base,
     fuse_core::node_interfaces::Clock,
@@ -262,9 +257,9 @@ protected:
   int icr_buffer_length_ {10};  //!< The length of the TF2 buffer in seconds
   rclcpp::Duration icr_buffer_timeout_ {0, 0};  //!< The maximum time to wait for a transform to become
                                                 //!< available
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_; //!< TF2 buffer for ICR transforms
+  std::unique_ptr<tf2::TimeCache> tf_cache_;  //!< TF2 time cache for ICR transforms
   std::shared_ptr<fuse_models::ICRListener> icr_listener_;  //!< ICR position listener
-  
+
   ParameterType params_;  //!< The parameters for this motion model
 };
 

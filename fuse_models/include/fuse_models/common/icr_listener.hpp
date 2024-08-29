@@ -5,8 +5,9 @@
 #include <memory>
 #include <thread>
 #include <utility>
+#include <cmath>
 
-#include "tf2/buffer_core.h"
+#include "tf2/time_cache.h"
 #include "tf2/time.h"
 #include "tf2_ros/visibility_control.h"
 
@@ -45,8 +46,8 @@ public:
    * If you already have access to a ROS 2 node and you want to associate the ICRListener
    * to it, then it's recommended to use one of the other constructors.
    */
-  ICRListener(tf2::BufferCore & buffer, bool spin_thread = true)
-  : buffer_(buffer)
+  ICRListener(tf2::TimeCache & cache, bool spin_thread = true)
+  : cache_(cache)
   {
     rclcpp::NodeOptions options;
     // create a unique name for the node
@@ -74,14 +75,14 @@ public:
   /** \brief Node constructor */
   template<class NodeT, class AllocatorT = std::allocator<void>>
   ICRListener(
-    tf2::BufferCore & buffer,
+    tf2::TimeCache & cache,
     NodeT && node,
     bool spin_thread = true,
     const rclcpp::QoS & qos = tf2_ros::DynamicListenerQoS(),
     const rclcpp::SubscriptionOptionsWithAllocator<AllocatorT> & options =
     detail::get_default_icr_listener_sub_options<AllocatorT>())
   : ICRListener(
-      buffer,
+      cache,
       node->get_node_base_interface(),
       node->get_node_logging_interface(),
       node->get_node_parameters_interface(),
@@ -94,7 +95,7 @@ public:
   /** \brief Node interface constructor */
   template<class AllocatorT = std::allocator<void>>
   ICRListener(
-    tf2::BufferCore & buffer,
+    tf2::TimeCache & cache,
     rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_base,
     rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging,
     rclcpp::node_interfaces::NodeParametersInterface::SharedPtr node_parameters,
@@ -103,7 +104,7 @@ public:
     const rclcpp::QoS & qos = tf2_ros::DynamicListenerQoS(),
     const rclcpp::SubscriptionOptionsWithAllocator<AllocatorT> & options =
     detail::get_default_icr_listener_sub_options<AllocatorT>())
-  : buffer_(buffer)
+  : cache_(cache)
   {
     init(
       node_base,
@@ -115,37 +116,49 @@ public:
       options);
   }
 
-  ~ICRListener() {
+  ~ICRListener()
+  {
     if (spin_thread_) {
       executor_->cancel();
       dedicated_listener_thread_->join();
     }
   }
 
-  /// Callback function for ICR position message subscription 
-
+  /// Callback function for ICR position message subscription
   // let base_link be frame a, and icr be frame b
-  void subscription_callback(const emrs_interfaces::msg::Point2DStamped & msg) {
-    geometry_msgs::msg::TransformStamped transform;
-    transform.header.stamp = msg.header.stamp;
-    transform.header.frame_id = "a";
-    transform.child_frame_id = "b";
-    transform.transform.translation.x = msg.x;
-    transform.transform.translation.y = msg.y;
-
-    // TODO(tfoote) find a way to get the authority
-    std::string authority = "Authority undetectable";
-    try {
-      buffer_.setTransform(transform, authority, false);
-    } catch (const tf2::TransformException & ex) {
-      // /\todo Use error reporting
-      std::string temp = ex.what();
-      RCLCPP_ERROR(
-        node_logging_interface_->get_logger(),
-        "Failure to set received transform from %s to %s with error: %s\n",
-        transform.child_frame_id.c_str(),
-        transform.header.frame_id.c_str(), temp.c_str());
+  void subscription_callback(const emrs_interfaces::msg::Point2DStamped & msg)
+  {
+    // Check if ICR is moving
+    if (!isMoving(msg)) {
+      return;
     }
+    tf2::Transform transform;
+    transform.setOrigin(tf2::Vector3(-msg.x, -msg.y, 0));
+    transform.setRotation(tf2::Quaternion(0, 0, 0, 1));
+
+    auto timestamp = tf2::TimePoint(
+      std::chrono::seconds(msg.header.stamp.sec) +
+      std::chrono::nanoseconds(msg.header.stamp.nanosec));
+    setTransform(transform, timestamp);
+  }
+
+  void setTransform(const tf2::Transform & tf, const tf2::TimePoint & stamp)
+  {
+    cache_.insertData(
+      tf2::TransformStorage(
+        stamp, tf.getRotation(), tf.getOrigin(), 0, 1));
+    last_icr_tf_ = tf;
+  }
+
+  bool isMoving(const emrs_interfaces::msg::Point2DStamped & msg, const double tol = 1e-3) const
+  {
+    return std::hypot(
+      (msg.x - last_icr_tf_.getOrigin().x()), (msg.y - last_icr_tf_.getOrigin().y())) > tol;
+  }
+
+  const tf2::Transform & getLastTransform() const
+  {
+    return last_icr_tf_;
   }
 
 private:
@@ -175,18 +188,20 @@ private:
       tf_options.callback_group = callback_group_;
 
       message_subscription_icr_ = rclcpp::create_subscription<emrs_interfaces::msg::Point2DStamped>(
-        node_parameters, node_topics, "/emrs/locomotion/icr/filtered/pos", qos, std::move(cb), tf_options);
+        node_parameters, node_topics, "/emrs/locomotion/icr/filtered/pos", qos, std::move(
+          cb), tf_options);
 
       // Create executor with dedicated thread to spin.
       executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
       executor_->add_callback_group(callback_group_, node_base_interface_);
       dedicated_listener_thread_ = std::make_unique<std::thread>([&]() {executor_->spin();});
-      // Tell the buffer we have a dedicated thread to enable timeouts
-      buffer_.setUsingDedicatedThread(true);
     } else {
       message_subscription_icr_ = rclcpp::create_subscription<emrs_interfaces::msg::Point2DStamped>(
-        node_parameters, node_topics, "/emrs/locomotion/icr/filtered/pos", qos, std::move(cb), options);
+        node_parameters, node_topics, "/emrs/locomotion/icr/filtered/pos", qos, std::move(
+          cb), options);
     }
+
+    setTransform(last_icr_tf_, tf2::get_now());
   }
 
   bool spin_thread_{false};
@@ -196,11 +211,13 @@ private:
   rclcpp::Node::SharedPtr optional_default_node_ {nullptr};
   rclcpp::Subscription<emrs_interfaces::msg::Point2DStamped>::SharedPtr
     message_subscription_icr_ {nullptr};
-  tf2::BufferCore & buffer_;
-  tf2::TimePoint last_update_;
+  tf2::TimeCache & cache_;
+
   rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr node_logging_interface_ {nullptr};
   rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_base_interface_ {nullptr};
   rclcpp::CallbackGroup::SharedPtr callback_group_{nullptr};
+
+  tf2::Transform last_icr_tf_{tf2::Quaternion(0, 0, 0, 1), tf2::Vector3(0, 0, 0)};
 };
 }  // namespace fuse_models
 
