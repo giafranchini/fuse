@@ -208,7 +208,8 @@ void Omnidirectional3D::onInit()
   params_.loadFromROS(interfaces_, name_);
 
   buffer_length_ =
-    (params_.buffer_length == 0.0) ? rclcpp::Duration::max() : rclcpp::Duration::from_seconds(params_.buffer_length);
+    (params_.buffer_length == 0.0) ? rclcpp::Duration::max() : rclcpp::Duration::from_seconds(
+    params_.buffer_length);
   timestamp_manager_.bufferLength(buffer_length_);
 }
 

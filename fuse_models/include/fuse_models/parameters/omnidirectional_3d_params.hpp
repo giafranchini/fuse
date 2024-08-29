@@ -79,13 +79,13 @@ public:
         ns,
         "scale_process_noise"),
       scale_process_noise);
-    
+
     disable_checks = fuse_core::getParam(
       interfaces, fuse_core::joinParameterName(
         ns,
         "disable_checks"),
       disable_checks);
-    
+
     fuse_core::getPositiveParam(
       interfaces, fuse_core::joinParameterName(
         ns,
@@ -103,8 +103,8 @@ public:
         ns,
         "buffer_length"),
       buffer_length);
-    
-    process_noise_covariance = 
+
+    process_noise_covariance =
       fuse_core::getCovarianceDiagonalParam<15>(
       interfaces,
       fuse_core::joinParameterName(ns, "process_noise_diagonal"), 0.001);
