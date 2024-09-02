@@ -1,5 +1,5 @@
 <library path="fuse_publishers">
-  <class type="fuse_publishers::Path2DPublisher" base_class_type="fuse_core::Publisher">
+  <!-- <class type="fuse_publishers::Path2DPublisher" base_class_type="fuse_core::Publisher">
     <description>
       Publisher plugin that publishes all of the Position2DStamped/Orientation2DStamped poses as a
       nav_msgs::msg::Path message.
@@ -10,7 +10,7 @@
       Publisher that publishes the most recent Position2DStamped/Orientation2DStamped to one or more topics,
       including tf.
     </description>
-  </class>
+  </class> -->
   <class type="fuse_publishers::SerializedPublisher" base_class_type="fuse_core::Publisher">
     <description>
       Publisher plugin that publishes the transaction and graph as serialized messages.
