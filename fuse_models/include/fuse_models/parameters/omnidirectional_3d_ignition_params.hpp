@@ -77,6 +77,18 @@ public:
         ns,
         "publish_on_startup"),
       publish_on_startup);
+    use_imu_initial_orientation = fuse_core::getParam(
+      interfaces, fuse_core::joinParameterName(
+        ns,
+        "use_imu_initial_orientation"),
+      use_imu_initial_orientation);
+    if (use_imu_initial_orientation) {
+      imu_topic = fuse_core::getParam(
+        interfaces, fuse_core::joinParameterName(
+          ns,
+          "imu_topic"),
+        imu_topic);
+    }
     queue_size = fuse_core::getParam(
       interfaces, fuse_core::joinParameterName(
         ns,
@@ -161,6 +173,11 @@ public:
   bool publish_on_startup {true};
 
   /**
+   * @brief Flag indicating if the initial state orientation should be set using the IMU readings
+   */
+  bool use_imu_initial_orientation {false};
+
+  /**
    * @brief The size of the subscriber queue for the set_pose topic
    */
   int queue_size {10};
@@ -184,6 +201,11 @@ public:
    * @brief The topic name for received PoseWithCovarianceStamped messages
    */
   std::string topic {"set_pose"};
+
+  /**
+   * @brief The topic name for the initial orientation IMU message
+   */
+  std::string imu_topic {"imu"};
 
   /**
    * @brief The uncertainty of the initial state value
