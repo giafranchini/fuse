@@ -36,6 +36,7 @@
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2/LinearMath/Transform.h>
 
 #include <memory>
 #include <string>
@@ -169,6 +170,7 @@ protected:
     fuse_core::node_interfaces::Clock,
     fuse_core::node_interfaces::Logging,
     fuse_core::node_interfaces::Parameters,
+    fuse_core::node_interfaces::Timers,
     fuse_core::node_interfaces::Topics,
     fuse_core::node_interfaces::Waitables
   > interfaces_;  //!< Shadows AsyncSensorModel interfaces_
@@ -188,6 +190,10 @@ protected:
 
   using ImuThrottledCallback = fuse_core::ThrottledMessageCallback<sensor_msgs::msg::Imu>;
   ImuThrottledCallback throttled_callback_;
+
+  bool started = false;
+  tf2::Transform tf_odom_bl_, tf_odom_ef_, tf_bl_imu_;
+  tf2_ros::CreateTimerInterface::SharedPtr create_timer_interface_;
 };
 
 }  // namespace fuse_models

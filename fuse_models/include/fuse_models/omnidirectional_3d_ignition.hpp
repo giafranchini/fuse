@@ -47,6 +47,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "tf2_ros/static_transform_broadcaster.h"
 #include <std_srvs/srv/empty.hpp>
 
 
@@ -213,6 +214,8 @@ protected:
   rclcpp::Service<fuse_msgs::srv::SetPoseDeprecated>::SharedPtr set_pose_deprecated_service_;
 
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_;
+
+  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster_;
 };
 
 }  // namespace fuse_models

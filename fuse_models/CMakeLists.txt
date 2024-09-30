@@ -41,20 +41,20 @@ find_package(Eigen3 REQUIRED)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/acceleration_2d.cpp
+  # src/acceleration_2d.cpp
   src/graph_ignition.cpp
-  src/imu_2d.cpp
+  # src/imu_2d.cpp
   src/imu_3d.cpp
-  src/odometry_2d.cpp
-  src/odometry_2d_publisher.cpp
+  # src/odometry_2d.cpp
+  # src/odometry_2d_publisher.cpp
   src/odometry_3d.cpp
   src/odometry_3d_publisher.cpp
-  src/pose_2d.cpp
+  # src/pose_2d.cpp
   src/transaction.cpp
-  src/twist_2d.cpp
-  src/unicycle_2d.cpp
-  src/unicycle_2d_ignition.cpp
-  src/unicycle_2d_state_kinematic_constraint.cpp
+  # src/twist_2d.cpp
+  # src/unicycle_2d.cpp
+  # src/unicycle_2d_ignition.cpp
+  # src/unicycle_2d_state_kinematic_constraint.cpp
   src/omnidirectional_3d.cpp
   src/omnidirectional_3d_ignition.cpp
   src/omnidirectional_3d_state_kinematic_constraint.cpp

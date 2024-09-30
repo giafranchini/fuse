@@ -34,6 +34,9 @@
 #include <memory>
 #include <utility>
 
+#include <tf2/convert.h>
+#include <tf2_ros/create_timer_ros.h>
+
 #include <fuse_core/transaction.hpp>
 #include <fuse_core/uuid.hpp>
 #include <fuse_models/common/sensor_proc.hpp>
@@ -43,6 +46,7 @@
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/wait_for_message.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 
 
@@ -137,14 +141,80 @@ void Imu3D::onStop()
 
 void Imu3D::process(const sensor_msgs::msg::Imu & msg)
 {
+  if (!started) {
+    geometry_msgs::msg::TransformStamped a;
+    try {
+      a = tf_buffer_->lookupTransform(
+        msg.header.frame_id,
+        "base_link",
+        tf2::TimePointZero,
+        std::chrono::seconds(5));
+    } catch (const tf2::TransformException & ex) {
+      RCLCPP_ERROR_STREAM(
+        logger_, 
+        "Could not transform message from base_link" << " to " << msg.header.frame_id << ". Error was " << ex.what());
+      return;
+    }
+
+    create_timer_interface_ = std::make_shared<tf2_ros::CreateTimerROS>(
+      interfaces_.get_node_base_interface(),
+      interfaces_.get_node_timers_interface());
+
+    tf_buffer_->setCreateTimerInterface(create_timer_interface_);
+    auto b = tf_buffer_->waitForTransform(
+      "base_link",
+      "odom_init",
+      tf2::TimePointZero,
+      std::chrono::seconds(10),
+      [&](const tf2_ros::TransformStampedFuture & future) {
+        try {
+          return future;
+        } catch (const tf2::TransformException & ex) {
+          RCLCPP_ERROR_STREAM(
+            logger_,
+            "Could not transform message from odom_init to base_link" << ". Error was " << ex.what());
+          return future;
+        };
+      }
+    );
+
+    if (!b.valid()) {
+      return;
+    }
+        
+    tf2::Transform tf_imu;
+    tf2::fromMsg(a.transform, tf_bl_imu_);
+    tf2::fromMsg(b.get().transform, tf_odom_bl_);
+    tf_imu.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
+    tf_imu.setRotation(tf2::Quaternion(
+      msg.orientation.x,
+      msg.orientation.y,
+      msg.orientation.z,
+      msg.orientation.w
+    ));
+
+    tf_odom_ef_ = tf_odom_bl_ * tf_bl_imu_ * tf_imu.inverse();
+    started = true;
+  }
+
   // Create a transaction object
   auto transaction = fuse_core::Transaction::make_shared();
   transaction->stamp(msg.header.stamp);
 
+  tf2::Transform tf_imu;
+  tf_imu.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
+  tf_imu.setRotation(tf2::Quaternion(msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w));
+
+  tf_odom_bl_ = tf_odom_ef_ * tf_imu * tf_bl_imu_.inverse(); 
+
   // Handle the orientation data (treat it as a pose, but with only orientation indices used)
   auto pose = std::make_unique<geometry_msgs::msg::PoseWithCovarianceStamped>();
-  pose->header = msg.header;
-  pose->pose.pose.orientation = msg.orientation;
+  pose->header.stamp = msg.header.stamp;
+  pose->header.frame_id = "odom";
+  pose->pose.pose.orientation.x = tf_odom_bl_.getRotation().x();
+  pose->pose.pose.orientation.y = tf_odom_bl_.getRotation().y();
+  pose->pose.pose.orientation.z = tf_odom_bl_.getRotation().z();
+  pose->pose.pose.orientation.w = tf_odom_bl_.getRotation().w();
   pose->pose.covariance[21] = msg.orientation_covariance[0];
   pose->pose.covariance[22] = msg.orientation_covariance[1];
   pose->pose.covariance[23] = msg.orientation_covariance[2];

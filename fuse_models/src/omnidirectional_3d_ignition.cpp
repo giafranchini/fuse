@@ -141,6 +141,10 @@ void Omnidirectional3DIgnition::onInit()
     rclcpp::ServicesQoS(),
     cb_group_
   );
+
+  tf_static_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(
+    interfaces_.get_node_parameters_interface(),
+    interfaces_.get_node_topics_interface());
 }
 
 void Omnidirectional3DIgnition::start()
@@ -168,6 +172,24 @@ void Omnidirectional3DIgnition::start()
     }
     sendPrior(pose);
     initial_transaction_sent_ = true;
+
+    // Here we publish the inverse transform otherwise it will complain since, at this time,
+    // we still don't have a transform odom -> base_link. We then have to make sure to ask for
+    // the inverse (from odom_init to base_link) later in IMU plugin.
+    geometry_msgs::msg::TransformStamped t;
+    q = q.inverse();
+    t.header.stamp = pose.header.stamp;
+    t.header.frame_id = "base_link";
+    t.child_frame_id = "odom_init";
+    t.transform.translation.x = -params_.initial_state[0];
+    t.transform.translation.y = -params_.initial_state[1];
+    t.transform.translation.z = -params_.initial_state[2];
+    t.transform.rotation.x = q.x();
+    t.transform.rotation.y = q.y();
+    t.transform.rotation.z = q.z();
+    t.transform.rotation.w = q.w();
+
+    tf_static_broadcaster_->sendTransform(t);
   }
 }
 
