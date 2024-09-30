@@ -57,7 +57,9 @@
 #include <fuse_variables/velocity_linear_3d_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/wait_for_message.hpp>
 #include <std_srvs/srv/empty.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 // Register this motion model with ROS as a plugin.
@@ -157,8 +159,38 @@ void Omnidirectional3DIgnition::start()
   if (params_.publish_on_startup && !initial_transaction_sent_) {
     auto pose = geometry_msgs::msg::PoseWithCovarianceStamped();
     tf2::Quaternion q;
-    // q.setRPY(params_.initial_state[3], params_.initial_state[4], params_.initial_state[5]);
-    q.setEuler(params_.initial_state[5], params_.initial_state[4], params_.initial_state[3]);
+    q.setRPY(params_.initial_state[3], params_.initial_state[4], params_.initial_state[5]);
+    if (params_.use_imu_initial_orientation) {
+      auto node_topics_interface = interfaces_.get_node_topics_interface();
+      auto imu_sub = rclcpp::create_subscription<sensor_msgs::msg::Imu>(
+        node_topics_interface,
+        params_.imu_topic,
+        rclcpp::SensorDataQoS(),
+        [](const std::shared_ptr<const sensor_msgs::msg::Imu>){});
+      auto imu_msg = sensor_msgs::msg::Imu();
+
+      // TODO(giafranchini): check timeout, defaults to: std::chrono::duration<Rep, Period>(-1)
+      rclcpp::wait_for_message(
+        imu_msg, 
+        imu_sub, 
+        interfaces_.get_node_base_interface()->get_context());
+      auto orientation_norm = std::sqrt(
+      imu_msg.orientation.x * imu_msg.orientation.x +
+      imu_msg.orientation.y * imu_msg.orientation.y +
+      imu_msg.orientation.z * imu_msg.orientation.z +
+      imu_msg.orientation.w * imu_msg.orientation.w);
+      if (std::abs(orientation_norm - 1.0) > 1.0e-3) {
+        throw std::invalid_argument(
+                "Attempting to set the pose to an invalid orientation (" +
+                std::to_string(imu_msg.orientation.x) + ", " +
+                std::to_string(imu_msg.orientation.y) + ", " +
+                std::to_string(imu_msg.orientation.z) + ", " +
+                std::to_string(imu_msg.orientation.w) + ").");
+      }
+      q = tf2::Quaternion(
+        imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z, imu_msg.orientation.w);
+    }
+
     pose.header.stamp = clock_->now();
     pose.pose.pose.position.x = params_.initial_state[0];
     pose.pose.pose.position.y = params_.initial_state[1];
