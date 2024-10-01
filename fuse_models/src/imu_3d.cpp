@@ -140,7 +140,7 @@ void Imu3D::onStop()
 }
 
 void Imu3D::process(const sensor_msgs::msg::Imu & msg)
-{ 
+{
   if (!has_base_tf_) {
     // First time: get the tf imu -> base_link
     geometry_msgs::msg::TransformStamped a;
@@ -151,25 +151,29 @@ void Imu3D::process(const sensor_msgs::msg::Imu & msg)
         tf2::TimePointZero,
         std::chrono::seconds(5));
     } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN_STREAM(logger_, "Could not transform from " << msg.header.frame_id << " and base_link. Error was " << ex.what());
+      RCLCPP_WARN_STREAM(
+        logger_,
+        "Could not transform from " << msg.header.frame_id << " and base_link. Error was " <<
+          ex.what());
       return;
     }
 
     tf2::fromMsg(a.transform, tf_bl_imu_);
     has_base_tf_ = true;
   }
-       
+
   tf2::Transform tf_imu;
   tf_imu.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
-  tf_imu.setRotation(tf2::Quaternion(
-    msg.orientation.x,
-    msg.orientation.y,
-    msg.orientation.z,
-    msg.orientation.w
+  tf_imu.setRotation(
+    tf2::Quaternion(
+      msg.orientation.x,
+      msg.orientation.y,
+      msg.orientation.z,
+      msg.orientation.w
   ));
 
   tf_imu *= tf_bl_imu_;
-  
+
   // Create a transaction object
   auto transaction = fuse_core::Transaction::make_shared();
   transaction->stamp(msg.header.stamp);
