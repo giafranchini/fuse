@@ -166,48 +166,43 @@ void Omnidirectional3DIgnition::start()
   //                 transaction immediately, if requested
   if (params_.publish_on_startup && !initial_transaction_sent_) {
     auto pose = geometry_msgs::msg::PoseWithCovarianceStamped();
-    tf2::Quaternion q;
+    tf2::Transform tf_pose;
+    tf_pose.setOrigin(tf2::Vector3(params_.initial_state[0], params_.initial_state[1], params_.initial_state[2]));
     if (params_.use_imu_initial_orientation) {
       // Initialize robot orientation using roll and pitch angles from imu absolute readings.
       // Since our IMU does not provide absolute heading, yaw angle is manually set by the user. 
       // This is NOT supposed to be used if IMU orientations are processed in differential mode.
 
-      // Wait for first IMU message  
-      auto node_topics_interface = interfaces_.get_node_topics_interface();
-      auto imu_sub = rclcpp::create_subscription<sensor_msgs::msg::Imu>(
-        node_topics_interface,
-        params_.imu_topic,
-        rclcpp::SensorDataQoS(),
-        [](const std::shared_ptr<const sensor_msgs::msg::Imu>){});
+      // Wait for first IMU message 
+      auto node = std::make_shared<rclcpp::Node>("wait_for_imu_msg_node"); 
       auto imu_msg = sensor_msgs::msg::Imu();
 
-      rclcpp::wait_for_message(
-        imu_msg, 
-        imu_sub, 
-        interfaces_.get_node_base_interface()->get_context(),
-        std::chrono::duration<double>(5.0));
-      auto orientation_norm = std::sqrt(
-      imu_msg.orientation.x * imu_msg.orientation.x +
-      imu_msg.orientation.y * imu_msg.orientation.y +
-      imu_msg.orientation.z * imu_msg.orientation.z +
-      imu_msg.orientation.w * imu_msg.orientation.w);
-      if (std::abs(orientation_norm - 1.0) > 1.0e-3) {
-        throw std::invalid_argument(
-                "Attempting to set the pose to an invalid orientation (" +
-                std::to_string(imu_msg.orientation.x) + ", " +
-                std::to_string(imu_msg.orientation.y) + ", " +
-                std::to_string(imu_msg.orientation.z) + ", " +
-                std::to_string(imu_msg.orientation.w) + ").");
+      bool has_msg {false};
+      while (!has_msg) { 
+        has_msg = rclcpp::wait_for_message(
+          imu_msg, 
+          node, 
+          params_.imu_topic);
+        
+        if (has_msg) {
+          auto orientation_norm = std::sqrt(
+            imu_msg.orientation.x * imu_msg.orientation.x +
+            imu_msg.orientation.y * imu_msg.orientation.y +
+            imu_msg.orientation.z * imu_msg.orientation.z +
+            imu_msg.orientation.w * imu_msg.orientation.w);
+          if (!imu_msg.header.frame_id.empty() && std::abs(orientation_norm - 1.0) < 1.0e-3) {
+            break;
+          }
+        }
       }
-      q = tf2::Quaternion(imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z, imu_msg.orientation.w);
       
       // Imu absolute readings are in local earth-fixed frame (enu / ned / nwu). Since we want to initialize the orientation
       // of the robot chassis, we need to obtain the transformation base_link frame -> local earth-fixed frame.
       geometry_msgs::msg::TransformStamped a;
       try {
         a = tf_buffer_->lookupTransform(
-          "imu",
           "base_link",
+          "imu",
           tf2::TimePointZero,
           std::chrono::seconds(5));
       } catch (const tf2::TransformException & ex) {
@@ -217,24 +212,37 @@ void Omnidirectional3DIgnition::start()
         return;
       }
 
-      tf2::Quaternion q_bl_imu;
-      tf2::fromMsg(a.transform.rotation, q_bl_imu);
-      q = q * q_bl_imu;  
+      tf2::Transform tf_imu, tf_bl_imu;
+      tf2::fromMsg(a.transform, tf_bl_imu);
+      tf_imu.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
+      tf_imu.setRotation(tf2::Quaternion(
+        imu_msg.orientation.x,
+        imu_msg.orientation.y,
+        imu_msg.orientation.z,
+        imu_msg.orientation.w
+      ));
+
+      tf_pose = tf_imu * tf_bl_imu;
+
+      // Filter out yaw angle from IMU and keep only roll and pitch
+      tf2::Quaternion q = tf_pose.getRotation();
       auto roll = fuse_core::getRoll(q.w(), q.x(), q.y(), q.z());
       auto pitch = fuse_core::getPitch(q.w(), q.x(), q.y(), q.z());
-      q.setRPY(roll, pitch, params_.initial_state[5]);
+      tf_pose.setRotation(
+        tf2::Quaternion().setRPY(roll, pitch, params_.initial_state[5]));
     } else {
-      q.setRPY(params_.initial_state[3], params_.initial_state[4], params_.initial_state[5]);
+      tf_pose.setRotation(
+        tf2::Quaternion().setRPY(params_.initial_state[3], params_.initial_state[4], params_.initial_state[5]));
     }
 
     pose.header.stamp = clock_->now();
-    pose.pose.pose.position.x = params_.initial_state[0];
-    pose.pose.pose.position.y = params_.initial_state[1];
-    pose.pose.pose.position.z = params_.initial_state[2];
-    pose.pose.pose.orientation.x = q.x();
-    pose.pose.pose.orientation.y = q.y();
-    pose.pose.pose.orientation.z = q.z();
-    pose.pose.pose.orientation.w = q.w();
+    pose.pose.pose.position.x = tf_pose.getOrigin().x();
+    pose.pose.pose.position.y = tf_pose.getOrigin().y();
+    pose.pose.pose.position.z = tf_pose.getOrigin().z();
+    pose.pose.pose.orientation.x = tf_pose.getRotation().x();
+    pose.pose.pose.orientation.y = tf_pose.getRotation().y();
+    pose.pose.pose.orientation.z = tf_pose.getRotation().z();
+    pose.pose.pose.orientation.w = tf_pose.getRotation().w();
     for (size_t i = 0; i < 6; i++) {
       pose.pose.covariance[i * 7] = params_.initial_sigma[i] * params_.initial_sigma[i];
     }
@@ -245,17 +253,10 @@ void Omnidirectional3DIgnition::start()
     // we still don't have a transform odom -> base_link. We then have to make sure to ask for
     // the inverse (from odom_init to base_link) later in IMU plugin.
     geometry_msgs::msg::TransformStamped t;
-    q = q.inverse();
     t.header.stamp = pose.header.stamp;
     t.header.frame_id = "base_link";
     t.child_frame_id = "odom_init";
-    t.transform.translation.x = -params_.initial_state[0];
-    t.transform.translation.y = -params_.initial_state[1];
-    t.transform.translation.z = -params_.initial_state[2];
-    t.transform.rotation.x = q.x();
-    t.transform.rotation.y = q.y();
-    t.transform.rotation.z = q.z();
-    t.transform.rotation.w = q.w();
+    tf2::toMsg(tf_pose, t.transform);
 
     tf_static_broadcaster_->sendTransform(t);
   }

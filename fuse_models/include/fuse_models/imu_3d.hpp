@@ -191,9 +191,8 @@ protected:
   using ImuThrottledCallback = fuse_core::ThrottledMessageCallback<sensor_msgs::msg::Imu>;
   ImuThrottledCallback throttled_callback_;
 
-  bool started = false;
-  tf2::Transform tf_odom_bl_, tf_odom_ef_, tf_bl_imu_;
-  tf2_ros::CreateTimerInterface::SharedPtr create_timer_interface_;
+  tf2::Transform tf_bl_imu_;
+  bool has_base_tf_ {false};
 };
 
 }  // namespace fuse_models
