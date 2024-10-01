@@ -144,9 +144,17 @@ void Omnidirectional3DIgnition::onInit()
     cb_group_
   );
 
-  tf_static_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(
+  tf_static_broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(
     interfaces_.get_node_parameters_interface(),
     interfaces_.get_node_topics_interface());
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(clock_);
+  tf_listener_ = std::make_unique<tf2_ros::TransformListener>(
+    *tf_buffer_,
+    interfaces_.get_node_base_interface(),
+    interfaces_.get_node_logging_interface(),
+    interfaces_.get_node_parameters_interface(),
+    interfaces_.get_node_topics_interface()
+  );
 }
 
 void Omnidirectional3DIgnition::start()
@@ -159,8 +167,12 @@ void Omnidirectional3DIgnition::start()
   if (params_.publish_on_startup && !initial_transaction_sent_) {
     auto pose = geometry_msgs::msg::PoseWithCovarianceStamped();
     tf2::Quaternion q;
-    q.setRPY(params_.initial_state[3], params_.initial_state[4], params_.initial_state[5]);
     if (params_.use_imu_initial_orientation) {
+      // Initialize robot orientation using roll and pitch angles from imu absolute readings.
+      // Since our IMU does not provide absolute heading, yaw angle is manually set by the user. 
+      // This is NOT supposed to be used if IMU orientations are processed in differential mode.
+
+      // Wait for first IMU message  
       auto node_topics_interface = interfaces_.get_node_topics_interface();
       auto imu_sub = rclcpp::create_subscription<sensor_msgs::msg::Imu>(
         node_topics_interface,
@@ -169,11 +181,11 @@ void Omnidirectional3DIgnition::start()
         [](const std::shared_ptr<const sensor_msgs::msg::Imu>){});
       auto imu_msg = sensor_msgs::msg::Imu();
 
-      // TODO(giafranchini): check timeout, defaults to: std::chrono::duration<Rep, Period>(-1)
       rclcpp::wait_for_message(
         imu_msg, 
         imu_sub, 
-        interfaces_.get_node_base_interface()->get_context());
+        interfaces_.get_node_base_interface()->get_context(),
+        std::chrono::duration<double>(5.0));
       auto orientation_norm = std::sqrt(
       imu_msg.orientation.x * imu_msg.orientation.x +
       imu_msg.orientation.y * imu_msg.orientation.y +
@@ -187,8 +199,32 @@ void Omnidirectional3DIgnition::start()
                 std::to_string(imu_msg.orientation.z) + ", " +
                 std::to_string(imu_msg.orientation.w) + ").");
       }
-      q = tf2::Quaternion(
-        imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z, imu_msg.orientation.w);
+      q = tf2::Quaternion(imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z, imu_msg.orientation.w);
+      
+      // Imu absolute readings are in local earth-fixed frame (enu / ned / nwu). Since we want to initialize the orientation
+      // of the robot chassis, we need to obtain the transformation base_link frame -> local earth-fixed frame.
+      geometry_msgs::msg::TransformStamped a;
+      try {
+        a = tf_buffer_->lookupTransform(
+          "imu",
+          "base_link",
+          tf2::TimePointZero,
+          std::chrono::seconds(5));
+      } catch (const tf2::TransformException & ex) {
+        RCLCPP_ERROR_STREAM(
+          logger_, 
+          "Could not transform message from base_link to imu. Error was " << ex.what());
+        return;
+      }
+
+      tf2::Quaternion q_bl_imu;
+      tf2::fromMsg(a.transform.rotation, q_bl_imu);
+      q = q * q_bl_imu;  
+      auto roll = fuse_core::getRoll(q.w(), q.x(), q.y(), q.z());
+      auto pitch = fuse_core::getPitch(q.w(), q.x(), q.y(), q.z());
+      q.setRPY(roll, pitch, params_.initial_state[5]);
+    } else {
+      q.setRPY(params_.initial_state[3], params_.initial_state[4], params_.initial_state[5]);
     }
 
     pose.header.stamp = clock_->now();

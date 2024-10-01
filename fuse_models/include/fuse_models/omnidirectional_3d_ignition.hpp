@@ -34,6 +34,10 @@
 #ifndef FUSE_MODELS__OMNIDIRECTIONAL_3D_IGNITION_HPP_
 #define FUSE_MODELS__OMNIDIRECTIONAL_3D_IGNITION_HPP_
 
+#include <tf2_ros/buffer.h>
+#include "tf2_ros/static_transform_broadcaster.h"
+#include <tf2_ros/transform_listener.h>
+
 #include <atomic>
 #include <memory>
 #include <string>
@@ -47,7 +51,6 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include "tf2_ros/static_transform_broadcaster.h"
 #include <std_srvs/srv/empty.hpp>
 
 
@@ -215,7 +218,9 @@ protected:
 
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_;
 
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster_;
+  std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
 };
 
 }  // namespace fuse_models
