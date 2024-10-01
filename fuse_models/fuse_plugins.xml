@@ -1,5 +1,5 @@
 <library path="fuse_models">
-  <class type="fuse_models::Unicycle2DStateKinematicConstraint" base_class_type="fuse_core::Constraint">
+  <!-- <class type="fuse_models::Unicycle2DStateKinematicConstraint" base_class_type="fuse_core::Constraint">
     <description>
     A class that represents a kinematic constraint between 2D states at two different times.
     </description>
@@ -10,7 +10,7 @@
     A fuse_models 2D kinematic model that generates kinematic constraints between provided time stamps, and adds
     those constraints to the fuse graph.
     </description>
-  </class>
+  </class> -->
 
   <class type="fuse_models::Omnidirectional3DStateKinematicConstraint" base_class_type="fuse_core::Constraint">
     <description>
@@ -25,13 +25,13 @@
     </description>
   </class>
   
-  <class type="fuse_models::Odometry2DPublisher" base_class_type="fuse_core::Publisher">
+  <!-- <class type="fuse_models::Odometry2DPublisher" base_class_type="fuse_core::Publisher">
     <description>
     Publisher plugin that publishes a nav_msgs::msg::Odometry message and broadcasts a tf transform for optimized 2D
     state data (combination of Position2DStamped, Orientation2DStamped, VelocityLinear2DStamped, and
     VelocityAngular2DStamped).
     </description>
-  </class>
+  </class> -->
 
   <class type="fuse_models::Odometry3DPublisher" base_class_type="fuse_core::Publisher">
     <description>
@@ -41,12 +41,12 @@
     </description>
   </class>
 
-  <class type="fuse_models::Acceleration2D" base_class_type="fuse_core::SensorModel">
+  <!-- <class type="fuse_models::Acceleration2D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces 2D linear acceleration constraints from information published by
     another node
     </description>
-  </class>
+  </class> -->
   <class type="fuse_models::GraphIgnition" base_class_type="fuse_core::SensorModel">
     <description>
     An ignition sensor designed to be used to reset the optimizer graph to an input graph. This is useful for debugging
@@ -55,43 +55,43 @@
     all the graph messages because that would take too much bandwidth or disk, so the recorded graph must be throttled.
     </description>
   </class>
-  <class type="fuse_models::Imu2D" base_class_type="fuse_core::SensorModel">
+  <!-- <class type="fuse_models::Imu2D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces orientation (relative or absolute), angular velocity, and linear
     acceleration constraints from IMU sensor data published by another node
     </description>
-  </class>
+  </class> -->
   <class type="fuse_models::Imu3D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces 3D orientation (relative or absolute), angular velocity, and linear
     acceleration constraints from IMU sensor data published by another node
     </description>
   </class>
-  <class type="fuse_models::Odometry2D" base_class_type="fuse_core::SensorModel">
+  <!-- <class type="fuse_models::Odometry2D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces pose (relative or absolute) and velocity constraints from sensor data
     published by another node
     </description>
-  </class>
+  </class> -->
   <class type="fuse_models::Odometry3D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces pose (relative or absolute) and velocity constraints from sensor data
     published by another node
     </description>
   </class>
-  <class type="fuse_models::Pose2D" base_class_type="fuse_core::SensorModel">
+  <!-- <class type="fuse_models::Pose2D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces absolute or relative pose constraints from information published by
     another node
     </description>
-  </class>
+  </class> -->
   <class type="fuse_models::Transaction" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces transactions with the same added and removed constraints from an input
     transaction. This is useful for debugging purposes because it allows to play back the recorded transactions.
     </description>
   </class>
-  <class type="fuse_models::Twist2D" base_class_type="fuse_core::SensorModel">
+  <!-- <class type="fuse_models::Twist2D" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces absolute velocity constraints from information published by another node
     </description>
@@ -100,7 +100,7 @@
     <description>
     A fuse_models ignition sensor designed to be used in conjunction with the unicycle 2D motion model.
     </description>
-  </class>
+  </class> -->
   <class type="fuse_models::Omnidirectional3DIgnition" base_class_type="fuse_core::SensorModel">
     <description>
     A fuse_models ignition sensor designed to be used in conjunction with the Omnidirectional 3D motion model.

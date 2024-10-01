@@ -10,16 +10,16 @@ target_link_libraries("test_stamped_variable_synchronizer"
   fuse_graphs::fuse_graphs
 )
 
-ament_add_gtest("test_path_2d_publisher" "test_path_2d_publisher.cpp")
-target_link_libraries("test_path_2d_publisher"
-  ${PROJECT_NAME}
-  fuse_constraints::fuse_constraints
-  fuse_graphs::fuse_graphs
-)
+# ament_add_gtest("test_path_2d_publisher" "test_path_2d_publisher.cpp")
+# target_link_libraries("test_path_2d_publisher"
+#   ${PROJECT_NAME}
+#   fuse_constraints::fuse_constraints
+#   fuse_graphs::fuse_graphs
+# )
 
-ament_add_gtest("test_pose_2d_publisher" "test_pose_2d_publisher.cpp")
-target_link_libraries("test_pose_2d_publisher"
-  ${PROJECT_NAME}
-  fuse_constraints::fuse_constraints
-  fuse_graphs::fuse_graphs
-)
+# ament_add_gtest("test_pose_2d_publisher" "test_pose_2d_publisher.cpp")
+# target_link_libraries("test_pose_2d_publisher"
+#   ${PROJECT_NAME}
+#   fuse_constraints::fuse_constraints
+#   fuse_graphs::fuse_graphs
+# )

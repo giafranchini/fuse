@@ -29,8 +29,8 @@ find_package(tf2_ros REQUIRED)
 
 # fuse_publishers library
 add_library(${PROJECT_NAME}
-  src/path_2d_publisher.cpp
-  src/pose_2d_publisher.cpp
+  # src/path_2d_publisher.cpp
+  # src/pose_2d_publisher.cpp
   src/serialized_publisher.cpp
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
