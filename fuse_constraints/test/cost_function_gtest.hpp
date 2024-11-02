@@ -53,7 +53,8 @@
  */
 static void ExpectCostFunctionsAreEqual(
   const ceres::CostFunction & cost_function,
-  const ceres::CostFunction & actual_cost_function)
+  const ceres::CostFunction & actual_cost_function, 
+  const double tol = 1e-16)
 {
   EXPECT_EQ(cost_function.num_residuals(), actual_cost_function.num_residuals());
   const size_t num_residuals = cost_function.num_residuals();
@@ -111,7 +112,7 @@ static void ExpectCostFunctionsAreEqual(
       parameter_blocks.get(), actual_residuals.get(),
       nullptr));
   for (size_t i = 0; i < num_residuals; ++i) {
-    EXPECT_DOUBLE_EQ(residuals[i], actual_residuals[i]) << "residual id: " << i;
+    EXPECT_NEAR(residuals[i], actual_residuals[i], tol) << "residual id: " << i;
   }
 
   EXPECT_TRUE(
@@ -123,11 +124,11 @@ static void ExpectCostFunctionsAreEqual(
       parameter_blocks.get(), actual_residuals.get(),
       actual_jacobian_blocks.get()));
   for (size_t i = 0; i < num_residuals; ++i) {
-    EXPECT_DOUBLE_EQ(residuals[i], actual_residuals[i]) << "residual : " << i;
+    EXPECT_NEAR(residuals[i], actual_residuals[i], tol) << "residual : " << i;
   }
 
   for (size_t i = 0; i < num_residuals * num_parameters; ++i) {
-    EXPECT_DOUBLE_EQ(jacobians[i], actual_jacobians[i])
+    EXPECT_NEAR(jacobians[i], actual_jacobians[i], tol)
       << "jacobian : " << i << " " << jacobians[i] << " " << actual_jacobians[i];
   }
 }

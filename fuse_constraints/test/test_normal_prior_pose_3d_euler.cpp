@@ -90,7 +90,7 @@ TEST_F(NormalPriorPose3DEulerTestFixture, AnalyticAndAutoDiffCostFunctionsAreEqu
   // Compare the expected, automatic differentiation, cost function and the actual one
   // N.B. in ExpectCostFunctionsAreEqual constructor, the first argument is the expected cost function
   // and the second argument is the actual cost function
-  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-12);
+  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-13);
 }
 
 TEST_F(
@@ -119,7 +119,7 @@ TEST_F(
     new fuse_constraints::NormalPriorPose3DEulerCostFunctor(partial_sqrt_information, full_mean),
     num_residuals);
 
-  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-12);
+  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-13);
 }
 
 TEST_F(
@@ -148,7 +148,7 @@ TEST_F(
     new fuse_constraints::NormalPriorPose3DEulerCostFunctor(partial_sqrt_information, full_mean),
     num_residuals);
 
-  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-12);
+  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-13);
 }
 
 TEST_F(
@@ -175,7 +175,7 @@ TEST_F(
     new fuse_constraints::NormalPriorPose3DEulerCostFunctor(partial_sqrt_information, full_mean),
     num_residuals);
 
-  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-12);
+  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-13);
 }
 
 TEST_F(
@@ -203,5 +203,5 @@ TEST_F(
     new fuse_constraints::NormalPriorPose3DEulerCostFunctor(partial_sqrt_information, full_mean),
     num_residuals);
 
-  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-12);
+  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-13);
 }

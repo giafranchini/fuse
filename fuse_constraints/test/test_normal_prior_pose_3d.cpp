@@ -89,5 +89,5 @@ TEST_F(NormalPriorPose3DTestFixture, AnalyticAndAutoDiffCostFunctionsAreEqual)
   // Compare the expected, automatic differentiation, cost function and the actual one
   // N.B. in ExpectCostFunctionsAreEqual constructor, the first argument is the expected cost function
   // and the second argument is the actual cost function
-  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-12);
+  ExpectCostFunctionsAreEqual(cost_function, autodiff_cost_function, 1e-14);
 }
