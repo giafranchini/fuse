@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <fuse_constraints/absolute_pose_3d_stamped_euler_constraint.hpp>
+#include <fuse_core/ceres_macros.hpp>
 #include <fuse_core/eigen.hpp>
 #include <fuse_core/eigen_gtest.hpp>
 #include <fuse_core/serialization.hpp>
@@ -246,12 +247,19 @@ TEST(AbsolutePose3DStampedEulerConstraint, Optimization)
   problem.AddParameterBlock(
     position_variable->data(),
     position_variable->size(),
+#if !CERES_SUPPORTS_MANIFOLDS
     position_variable->localParameterization());
+#else
+    position_variable->manifold());
+#endif
   problem.AddParameterBlock(
     orientation_variable->data(),
     orientation_variable->size(),
+#if !CERES_SUPPORTS_MANIFOLDS
     orientation_variable->localParameterization());
-
+#else
+    orientation_variable->manifold());
+#endif
   std::vector<double *> parameter_blocks;
   parameter_blocks.push_back(position_variable->data());
   parameter_blocks.push_back(orientation_variable->data());
@@ -365,12 +373,19 @@ TEST(AbsolutePose3DStampedEulerConstraint, OptimizationPartial)
   problem.AddParameterBlock(
     position_variable->data(),
     position_variable->size(),
+#if !CERES_SUPPORTS_MANIFOLDS
     position_variable->localParameterization());
+#else
+    position_variable->manifold());
+#endif
   problem.AddParameterBlock(
     orientation_variable->data(),
     orientation_variable->size(),
+#if !CERES_SUPPORTS_MANIFOLDS
     orientation_variable->localParameterization());
-
+#else
+    orientation_variable->manifold());
+#endif
   std::vector<double *> parameter_blocks;
   parameter_blocks.push_back(position_variable->data());
   parameter_blocks.push_back(orientation_variable->data());
